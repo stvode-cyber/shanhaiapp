@@ -8,3 +8,6 @@
 .externalNativeBuild
 /kotlin
 /jvm
+# Windows pywebview build artifacts
+/windows/dist/
+/windows/build/

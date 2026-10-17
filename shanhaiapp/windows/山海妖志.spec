@@ -1,11 +1,11 @@
-# -*- mode: python ; coding: utf-8 -*-
+﻿# -*- mode: python ; coding: utf-8 -*-
 
 
 a = Analysis(
     ['app.py'],
     pathex=[],
     binaries=[],
-    datas=[('../prototype', 'prototype')],
+    datas=[('prototype', 'prototype')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -36,3 +36,4 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
+
