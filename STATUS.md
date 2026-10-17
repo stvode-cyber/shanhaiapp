@@ -23,7 +23,7 @@
 
 ## 一句话状态
 
-**v0.4.0 交付**：三重验证链全绿（706+75+30 + Debug/Release），18 Compose Screen 全实现，零 KEY 闭环。Windows 上核心功能已全部完成。
+**v1.2.0-release 交付**：三重验证链全绿（706+75+37 + Debug/Release 3.59MB 正式签名），19 Compose Screen 全接 LocalGameState，存档持久化上线（SaveManager + SharedPreferences），零 KEY 闭环。Windows 上核心功能已全部完成。
 
 ---
 

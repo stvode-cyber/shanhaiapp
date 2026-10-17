@@ -22,6 +22,21 @@
 4. **合理假设代替提问**：资料缺失或需求模糊时，做出最合理的默认假设并**显式记录**该假设，然后继续。只有在（a）缺少外部凭证/密钥且无法替代，且（b）该阻断使核心功能完全无法推进时，才将该项标记为「阻断」并继续推进其余部分，绝不空转等待。
 5. **Trust-but-Verify**：不只看状态标记（如"已创建""已通过"），必须**回查实际产物**——真正运行、调用、打开、读取文件，确认它确实工作，才标记完成。
 
+### 0.3 快速上手（新 AI 第一眼 · 10 行必看）
+
+```
+① 项目：《山海妖志》—— LBS 山海经收妖 + 图鉴 + 对战 + 养成，中国风 Q 版
+② 技术栈：KMP（shared 57 Kotlin）+ Android Compose（19 Screen 全接 LocalGameState）
+③ 验证基线：JS 706 + DOM 75 + jvmTest 37 + Debug + Release 3.59MB 正式签名 全绿
+④ 零 KEY 闭环：osmdroid（Android）+ OSM Web（原型）+ MapKit（iOS 待接）
+⑤ Release：v1.2.0-release（20fc076）· keystore 密码存 .workbuddy/credentials.md
+⑥ 硬坑：gradle 前必须 robocopy 到 C:\temp（中文路径 JNI error）
+⑦ 活跃阻断：P17 gradle 中文路径（已绕过）、P29 iOS 需 macOS（硬限）
+⑧ 下一个目标：GDD 设定审计 → 代码数值全量对齐
+⑨ 接手三件套：工作台帐①仪表盘 → 工作台帐⑦任务卡 → .workbuddy/credentials.md
+⑩ 用户偏好：只做确认，全干完再交付，大白话+进度条
+```
+
 ---
 
 ## 1. 自主开发循环（每轮执行）

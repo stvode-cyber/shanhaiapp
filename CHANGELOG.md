@@ -7,6 +7,10 @@
 
 ## 2026-10
 
+- **2026-10-18 · 正式 Release 签名上线** · keytool 生成 25 年有效期 RSA 2048 release keystore + build.gradle.kts signingConfig 切换，Release APK 3.59MB 正式签名。commit 20fc076（→ composeApp/build.gradle.kts + keystores/release.keystore）。
+- **2026-10-18 · Release APK 打包成功** · verify_all.ps1 全链 ALL PASS，robocopy C:\temp 绕中文路径 + assembleRelease BUILD SUCCESSFUL，产出 3.59MB APK。commit a04d644（→ composeApp/build/outputs/apk/release/）。
+- **2026-10-18 · 存档持久化** · SaveManager.kt（kotlinx.serialization + SharedPreferences JSON）+ GameStateProvider 自动 ON_PAUSE + AboutScreen 手动存档/读档/清空按钮。commit 919898b（→ shared/androidMain/SaveManager.kt + composeApp/GameStateProvider.kt）。
+- **2026-10-18 · 19/19 Screen 全接 GameState** · Tier-3 Hub 网格 10 壳全部 LocalGameState，Homeestead + Secret 带 mutation。commit c2f5848（→ composeApp/screens/）。
 - **2026-10-17 · UI 状态观察 bug 修复** · Compose 拿 GameState 普通对象字段变了不刷新 → GameStateProvider 重写为 MutableState 包装 + mutate{} helper。GitHub 8622ae7（→ composeApp/GameStateProvider.kt）。
 - **2026-10-17 · 限定神独立池 + 流派模板一键套用** · GachaEngine 多池（NORMAL/LIMITED 各池独立保底计数，神率 1.8%）+ FormationTemplates 三流派（攻/防/辅）一键推荐技能。引擎层+jvmTest 30→37+UI 层全闭环。GitHub 468dff2 + 1e93b2f（→ shared/.../logic/GachaEngine.kt + FormationEngine.kt + composeApp/screens/）。
 - **2026-10-17 · 妖池分布对齐 GDD（精30/怪24/妖25/灵兽21）** · MonsterPool.kt 25 只 category 重分类 + verify_pool.py 4 断言同步，三重验证链全绿。GitHub 9f17af8（→ `90_文档规约/GDD对齐审计.md`）。

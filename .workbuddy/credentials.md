@@ -81,15 +81,19 @@ node test_game.js
 | osmdroid | Android SDK | 否 | Apache 2.0，Release 3.4MB |
 | MapKit | iOS SDK | 否 | Apple 原生，iosMain actual 待 macOS 桥接 |
 
-## 七、项目状态快照（2026-10-17 v1.1.0-gacha+formation）
+## 七、项目状态快照（2026-10-18 v1.2.0-release 存档+正式签名）
 
-- **版本**：v1.1.0-gacha+formation
-- **GitHub**：https://github.com/stvode-cyber/shanhaiapp（8 commits · 最新 1e93b2f）
+- **版本**：v1.2.0-release
+- **GitHub**：https://github.com/stvode-cyber/shanhaiapp（15 commits · 最新 20fc076）
+- **Git Tags**：v1.0.0 + v1.0.0-compose
 - **三重验证链**：706/706 + 75/75 + jvmTest **37/37** + Debug + Release 全绿
-- **源码统计**：79 Kotlin 文件（shared +1 多池 FormationTemplates；composeApp +1 GameStateProvider）
-- **新功能**：限定神独立池 + 流派模板一键套用（引擎层+UI 层全闭环）
-- **UI 架构修复**：GameStateProvider CompositionLocal + MutableState 包装 + mutate{} helper（解决 UI 假死）
-- **活跃阻断**：P17 gradle 中文路径、P29 iOS 需 macOS（均为硬限）
+- **源码统计**：85 Kotlin 文件（shared 61 + composeApp 24）
+- **新功能**：
+  - 19/19 Screen 全接 GameState（Tier-3 Hub 网格全 LocalGameState）
+  - 存档持久化（SaveManager + SharedPreferences + 自动 ON_PAUSE + AboutScreen 手动按钮）
+  - Release APK 3.59MB（正式签名，RSA 2048，25 年有效期）
+  - Release keystore SHA-256: 1387ee48d3fe3b4442f6027dc1aec74debf19fe68c680696a68c3708cc243423
+- **活跃阻断**：P17 gradle 中文路径、P29 iOS 需 macOS（均为硬限，已绕过）
 
 ---
 
@@ -97,5 +101,20 @@ node test_game.js
 
 | 日期 | 版本 | 变更 |
 |------|------|------|
+| 2026-10-18 | v1.2 | 19/19 Screen 全接 GameState + SaveManager 存档持久化 + Release APK 3.59MB 正式签名（commit 20fc076）|
 | 2026-10-17 | v1.1 | GachaEngine 多池 + FormationTemplates 三流派 + UI 状态观察修复 |
 | 2026-10-17 | v1.0 | 初始创建，集中所有凭证+路径+版本信息 |
+
+---
+
+## 九、Windows 独有坑（维护 hack · 务必遵守）
+
+> 详细凭证/版本见上文。每条都是踩过的血坑，别忘！
+
+1. **gradle 前必须 robocopy 到 C:\temp**（中文路径+emoji → JNI IllegalArgumentException）
+2. **osmdroid 依赖加两处**：shared/build.gradle.kts（androidMain）+ composeApp/build.gradle.kts（壳）
+3. **keytool 生成 release keystore 不能在中文路径** → C:\temp 干净路径生成再 robocopy 回
+4. **Python verify 脚本硬编码相对路径** → 必须 cd shanhaiapp/ 后再跑
+5. **kotlin.freeCompilerArgs=-Xexpect-actual-classes** → gradle.properties 里抑制 KT-61573（expect/actual Beta 警告）
+6. **src/debug/AndroidManifest.xml 才放 ACCESS_MOCK_LOCATION**（release lint MockLocation 禁止）
+7. **osmdroid 6.0+ 必须 OsmBootstrap.init() 设 User-Agent**（合规要求）

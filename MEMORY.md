@@ -8,11 +8,13 @@
 - **每日日志**：[`.workbuddy/memory/2026-08-19.md`](./.workbuddy/memory/2026-08-19.md) 等（按日期 Append-Only）。
 - **自动化/任务**：见 WorkBuddy 自动化与任务列表。
 
-## 二、当前状态快照（2026-08-19）
+## 二、当前状态快照（2026-10-18 v1.2.0-release）
 
-- 文档架构已按「总纲先行 + 模块化管理 + 讨论与正式分离」规约重建（本目录新结构：`00_工程总纲`/`STATUS`/`CHANGELOG`/各模块 `00_总纲`/`90_文档规约`/`93_讨论与处理`）。
-- 纯客户端可验证层完整收口：主验证 **1502/1502**、妖池 **1388/1388**、五契约脚本全过、双端镜像零漂移；JS 原型 **591/591 + 54/54**。
-- 待办：本机 JDK 编译验证；六类平台/后端契约运行时接入；将 `shanhaiapp/README.md` 等 legacy 正文按规约拆入各模块子文件。
+- 三重验证链全绿：JS 706/706 + DOM 75/75 + jvmTest **37/37** + Debug + Release（3.59MB 正式签名 RSA 2048/25年）。
+- 19 Compose Screen 全接 LocalGameState，无 mock 壳。存档持久化已上线（SaveManager + SharedPreferences + 自动 ON_PAUSE）。
+- 源码：80 Kotlin 文件（57 shared + 22 composeApp + SaveManager.kt）。零 KEY 闭环（osmdroid + OSM Web）。
+- 活跃阻断：P17 gradle 中文路径（已绕过 C:\temp）、P29 iOS 需 macOS（硬限）。
+- 待接入：iOS framework、AR 摄像头运行时、服务端权威（后端职责）。
 
 ## 三、导航
 
