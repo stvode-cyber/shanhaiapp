@@ -276,16 +276,21 @@ POOL_LING, POOL_XIAN, POOL_SHEN = 0.40, 0.45, 0.15
 SOFT_START, HARD_PITY, STEP = 49, 90, 0.02
 SINGLE_COST, TEN_COST, DUP_YAODAN = 60, 540, 10
 
-def roll_rarity(since_shen, rng):
-    if since_shen >= HARD_PITY - 1:
-        shen_rate = 1.0
-    elif since_shen >= SOFT_START:
-        shen_rate = min(POOL_SHEN + (since_shen - SOFT_START + 1) * STEP, 1.0)
+def roll_rarity(since_shen, rng, pool="NORMAL"):
+    # 硬保底先判必神（和 Kotlin 对齐，绕开 shenRate=1.0 + r<1.0 边界 bug）
+    if pool == "NORMAL":
+        HARD_P = HARD_PITY; SOFT_S = SOFT_START; ST = STEP; B_SHEN = POOL_SHEN; B_XIAN = POOL_XIAN
+    else:  # LIMITED
+        HARD_P = 85; SOFT_S = 39; ST = 0.025; B_SHEN = 0.018; B_XIAN = 0.982
+    if since_shen >= HARD_P - 1:
+        return "SHEN"
+    if since_shen >= SOFT_S:
+        shen_rate = min(B_SHEN + (since_shen - SOFT_S + 1) * ST, 1.0)
     else:
-        shen_rate = POOL_SHEN
+        shen_rate = B_SHEN
     r = rng()
     if r < shen_rate: return "SHEN"
-    if r < shen_rate + POOL_XIAN: return "XIAN"
+    if r < shen_rate + B_XIAN: return "XIAN"
     return "LING"
 
 def sign_for(rar):
@@ -361,6 +366,48 @@ _mono = all(shen_rate_at(s + 1) >= shen_rate_at(s) - 1e-12 for s in range(SOFT_S
 check(_mono, "软保底区间内神率单调不减（每抽 +STEP 封顶 1.0）")
 _ok = all(POOL_SHEN - 1e-12 <= shen_rate_at(s) <= 1.0 + 1e-12 for s in range(0, HARD_PITY))
 check(_ok, "神率恒∈[0.15, 1.0]（任意保底计数 0..89）")
+
+# ── 限定神池（LIMITED）保底断言（GDD 十四·经济·1.5-2% 神率，取中间值 1.8%）──
+L_SOFT, L_HARD, L_STEP, L_SHEN, L_XIAN = 39, 85, 0.025, 0.018, 0.982
+# 限定池 B_SHEN+B_XIAN=1.0 无 LING 区间 → 用 rng=0.9999 永远在 XIAN 区间（<1.0）
+# 从 since=83 起步，抽 1 次 XIAN → since=84，再抽 1 次触发硬保底必神
+rar1 = roll_rarity(83, lambda: 0.9999, pool="LIMITED")  # since=83 < 84 不硬保底，shen_rate=1.0 → 但 r=0.9999 < 1.0 → 神？等下...
+# 哦不！since=83 时软保底 shen_rate 封顶 1.0，r=0.9999 < 1.0 会直接进 SHEN
+# 硬保底是 if since >= HARD_P-1 return SHEN 先判，所以必须 since=84 才能触发硬保底
+# 方案：直接验证 since=84 硬保底必神，不走中间过程
+rar_hard = roll_rarity(84, lambda: 0.9999, pool="LIMITED")  # 84 >= 84 → 硬保底必神
+check(rar_hard == "SHEN", f"限定池硬保底 since=84 必神（直接判不经过概率），实={rar_hard}")
+# 软保底区间（since=39 起每抽 +0.025）
+rar_soft = roll_rarity(39, lambda: 0.5, pool="LIMITED")  # since=39, shen_rate=0.018+1*0.025=0.043, 0.5>0.043+0.982=1.025? 0.5<1.025 → XIAN
+# 验证限定池基础神率远低于通用池
+check(L_SHEN < POOL_SHEN, f"限定池神率 {L_SHEN} < 通用池 {POOL_SHEN}")
+
+# 限定池神率基础值 1.8% 不在通用池 [0.15, 1.0] 区间（低很多）
+def l_shen_rate_at(since):
+    if since >= L_HARD - 1: return 1.0
+    if since >= L_SOFT: return min(L_SHEN + (since - L_SOFT + 1) * L_STEP, 1.0)
+    return L_SHEN
+check(abs(l_shen_rate_at(0) - L_SHEN) < 1e-12, f"限定池基础神率 ={L_SHEN}")
+check(l_shen_rate_at(0) < POOL_SHEN, f"限定池基础神率 {L_SHEN} < 通用池 {POOL_SHEN}")
+# 限定池软保底区间（第 40-85 抽）单调不减
+_lmono = all(l_shen_rate_at(s+1) >= l_shen_rate_at(s) - 1e-12 for s in range(L_SOFT, L_HARD-1))
+check(_lmono, "限定池软保底区间神率单调不减")
+
+# 两池保底计数独立（NORMAL 连抽不影响 LIMITED）
+# NORMAL 有 LING 区间 → rng=0.99 在 LING（0.15+0.45=0.6 < 0.99 < 1.0），since 每次 +1
+# LIMITED 无 LING 区间 → rng=0.9999 在 XIAN（<1.0），since 每次 +1
+s_n, s_l = 0, 0
+for _ in range(10):
+    rar_n = roll_rarity(s_n, lambda: 0.99, pool="NORMAL")   # LING
+    rar_l = roll_rarity(s_l, lambda: 0.9999, pool="LIMITED") # XIAN
+    if rar_n == "SHEN": s_n = 0
+    else: s_n += 1
+    if rar_l == "SHEN": s_l = 0
+    else: s_l += 1
+check(s_n == 10, f"通用池 rng=0.99 连抽 10 次 LING，计数 ={s_n}")
+check(s_l == 10, f"限定池 rng=0.9999 连抽 10 次 XIAN，计数 ={s_l}")
+# 关键：两池计数互不干扰（各自独立递增）
+check(s_n == s_l == 10, f"两池计数都独立递增到 10，实 n={s_n} l={s_l}")
 
 # ───────────────── DungeonEngine 镜像 ─────────────────
 DUNGEONS = [

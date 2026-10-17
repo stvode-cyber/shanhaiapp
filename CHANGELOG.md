@@ -7,6 +7,8 @@
 
 ## 2026-10
 
+- **2026-10-17 · UI 状态观察 bug 修复** · Compose 拿 GameState 普通对象字段变了不刷新 → GameStateProvider 重写为 MutableState 包装 + mutate{} helper。GitHub 8622ae7（→ composeApp/GameStateProvider.kt）。
+- **2026-10-17 · 限定神独立池 + 流派模板一键套用** · GachaEngine 多池（NORMAL/LIMITED 各池独立保底计数，神率 1.8%）+ FormationTemplates 三流派（攻/防/辅）一键推荐技能。引擎层+jvmTest 30→37+UI 层全闭环。GitHub 468dff2 + 1e93b2f（→ shared/.../logic/GachaEngine.kt + FormationEngine.kt + composeApp/screens/）。
 - **2026-10-17 · 妖池分布对齐 GDD（精30/怪24/妖25/灵兽21）** · MonsterPool.kt 25 只 category 重分类 + verify_pool.py 4 断言同步，三重验证链全绿。GitHub 9f17af8（→ `90_文档规约/GDD对齐审计.md`）。
 - **2026-10-17 · GDD 设定审计 + 五行矩阵 bug 修复** · Element.kt 五行矩阵 3 处对齐 GDD 附录，三重验证链全绿。GitHub cfa6e5f（→ `90_文档规约/GDD对齐审计.md`）。
 - **2026-10-17 · 文档体系升级** · 17 模块总纲全量同步 v0.4.0（引擎→Screen 绑定表 + 状态修正）、00_工程总纲去过时、STATUS 瘦身为纯导航、每日日志补档。GitHub b54f349 + 66bc3c8（→ 各模块 00_总纲）。
