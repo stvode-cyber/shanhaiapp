@@ -15,17 +15,19 @@ import com.shanhai.core.data.MonsterPool
 import com.shanhai.core.logic.GachaEngine
 import com.shanhai.core.model.Rarity
 import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.mutate
 
 /**
  * 商店 + 祈妖抽卡（GDD 十四·经济与变现）。
- * Tab 1：引妖香购买
- * Tab 2：祈妖 · 通用池（保底 50/90）
- * Tab 3：祈妖 · 限定神池（保底 40/85，神率 1.8%）
+ * Tab 0：引妖香购买
+ * Tab 1：祈妖 · 通用池（保底 50/90）
+ * Tab 2：祈妖 · 限定神池（保底 40/85，神率 1.8%）
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoreScreen(modifier: Modifier = Modifier) {
-    val gs = LocalGameState.current
+    val gsState = LocalGameState.current
+    val gs = gsState.value  // Compose 自动订阅变化
     var selectedTab by remember { mutableIntStateOf(0) }
 
     Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
@@ -47,9 +49,9 @@ fun StoreScreen(modifier: Modifier = Modifier) {
         Spacer(Modifier.height(12.dp))
 
         when (selectedTab) {
-            0 -> IncenseTab(gs)
-            1 -> GachaTab(gs, GachaEngine.PoolType.NORMAL)
-            2 -> GachaTab(gs, GachaEngine.PoolType.LIMITED)
+            0 -> IncenseTab(gsState)
+            1 -> GachaTab(gsState, GachaEngine.PoolType.NORMAL)
+            2 -> GachaTab(gsState, GachaEngine.PoolType.LIMITED)
         }
     }
 }
@@ -57,7 +59,8 @@ fun StoreScreen(modifier: Modifier = Modifier) {
 // ── Tab 0：引妖香 ──
 
 @Composable
-private fun IncenseTab(gs: com.shanhai.core.logic.GameState) {
+private fun IncenseTab(gsState: androidx.compose.runtime.MutableState<com.shanhai.core.logic.GameState>) {
+    val gs = gsState.value
     val cost = com.shanhai.core.logic.ShopEngine.INCENSE_REFILL_COST_LINGYU
     val amount = com.shanhai.core.logic.ShopEngine.INCENSE_REFILL_AMOUNT
     val cap = com.shanhai.core.logic.ShopEngine.INCENSE_DAILY_BUY_CAP
@@ -74,7 +77,7 @@ private fun IncenseTab(gs: com.shanhai.core.logic.GameState) {
                 Button(
                     onClick = {
                         val today = java.time.LocalDate.now().toString()
-                        gs.buyIncense(today)
+                        gsState.mutate { it.buyIncense(today) }
                     },
                     enabled = gs.lingyu >= cost && gs.shopIncenseBought < cap,
                     modifier = Modifier.fillMaxWidth()
@@ -87,7 +90,9 @@ private fun IncenseTab(gs: com.shanhai.core.logic.GameState) {
 // ── Tab 1/2：祈妖抽卡（通用 / 限定） ──
 
 @Composable
-private fun GachaTab(gs: com.shanhai.core.logic.GameState, pool: GachaEngine.PoolType) {
+private fun GachaTab(gsState: androidx.compose.runtime.MutableState<com.shanhai.core.logic.GameState>,
+                     pool: GachaEngine.PoolType) {
+    val gs = gsState.value
     val isLimited = pool == GachaEngine.PoolType.LIMITED
     val hardLimit = if (isLimited) GachaEngine.LIMITED_HARD_PITY else GachaEngine.NORMAL_HARD_PITY
     val softStart = if (isLimited) GachaEngine.LIMITED_SOFT_PITY_START else GachaEngine.NORMAL_SOFT_PITY_START
@@ -121,13 +126,13 @@ private fun GachaTab(gs: com.shanhai.core.logic.GameState, pool: GachaEngine.Poo
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.fillMaxWidth()) {
             Button(onClick = {
-                lastResult = gs.pullGacha(ten = false, pool = pool)
+                lastResult = gsState.mutate { it.pullGacha(ten = false, pool = pool) }
             }, enabled = gs.lingyu >= GachaEngine.SINGLE_LINGYU,
                 modifier = Modifier.weight(1f).height(48.dp)) {
                 Text("单抽 -${GachaEngine.SINGLE_LINGYU}")
             }
             Button(onClick = {
-                lastResult = gs.pullGacha(ten = true, pool = pool)
+                lastResult = gsState.mutate { it.pullGacha(ten = true, pool = pool) }
             }, enabled = gs.lingyu >= GachaEngine.TEN_LINGYU,
                 modifier = Modifier.weight(1f).height(48.dp)) {
                 Text("十连 -${GachaEngine.TEN_LINGYU}")

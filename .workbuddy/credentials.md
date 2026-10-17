@@ -81,16 +81,14 @@ node test_game.js
 | osmdroid | Android SDK | 否 | Apache 2.0，Release 3.4MB |
 | MapKit | iOS SDK | 否 | Apple 原生，iosMain actual 待 macOS 桥接 |
 
-## 七、项目状态快照（2026-10-17 v1.0.0-compose）
+## 七、项目状态快照（2026-10-17 v1.1.0-gacha+formation）
 
-- **版本**：v1.0.0-compose · tag `v1.0.0-compose` · commit ba2912a
-- **GitHub**：https://github.com/stvode-cyber/shanhaiapp（6 commits + 2 tags）
-- **APK 产物**：Debug 16.1 MB / Release 3.5 MB
-- **DoD §2 五条**：全部满足
-- **三重验证链**：706/706 + 75/75 + jvmTest 30/30 + Debug + Release 全绿
-- **源码统计**：78 Kotlin 文件（57 shared + 21 composeApp）
-- **Compose Screen**：18 个（V1 核心 4 + V2 养成 6 + V3 副本 5 + V4 收尾 3）
-- **Tab 架构**：底部 5 核心（巡妖/妖典/试炼/副本/我的）+ Hub 网格 18 功能全挂
+- **版本**：v1.1.0-gacha+formation
+- **GitHub**：https://github.com/stvode-cyber/shanhaiapp（8 commits · 最新 1e93b2f）
+- **三重验证链**：706/706 + 75/75 + jvmTest **37/37** + Debug + Release 全绿
+- **源码统计**：79 Kotlin 文件（shared +1 多池 FormationTemplates；composeApp +1 GameStateProvider）
+- **新功能**：限定神独立池 + 流派模板一键套用（引擎层+UI 层全闭环）
+- **UI 架构修复**：GameStateProvider CompositionLocal + MutableState 包装 + mutate{} helper（解决 UI 假死）
 - **活跃阻断**：P17 gradle 中文路径、P29 iOS 需 macOS（均为硬限）
 
 ---
@@ -99,4 +97,5 @@ node test_game.js
 
 | 日期 | 版本 | 变更 |
 |------|------|------|
+| 2026-10-17 | v1.1 | GachaEngine 多池 + FormationTemplates 三流派 + UI 状态观察修复 |
 | 2026-10-17 | v1.0 | 初始创建，集中所有凭证+路径+版本信息 |
