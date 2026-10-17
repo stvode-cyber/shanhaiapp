@@ -14,6 +14,12 @@
 | **Android SDK** | `C:\Users\Administrator\Android\Sdk` | — |
 | **Gradle Wrapper** | `shanhaiapp\gradlew.bat` | 版本 8.7 |
 | **Kotlin** | 2.0.21（K2 编译器） | AGP 8.4.2，Compose Compiler Gradle plugin |
+| **Python** | 3.12.10 | `C:\Users\Administrator\AppData\Local\Programs\Python\Python312` |
+| **pywebview** | 6.2.1 | Windows 桌面壳（WebView2 后端）|
+| **PyInstaller** | 6.22.2 | 打包 EXE，输出到 `shanhaiapp\windows\dist\` |
+| **Windows 壳目录** | `shanhaiapp\windows\` | app.py + 山海妖志.spec + 启动.bat |
+| **Windows EXE** | `shanhaiapp\windows\dist\山海妖志.exe` | 20.24MB（v1.2.0-release · 2026-10-18）|
+| **打包 C:\\temp 路径** | `C:\temp\shanhai_windows\` | PyInstaller 必须在无中文路径下跑 |
 
 ## 二、凭证文件位置
 
