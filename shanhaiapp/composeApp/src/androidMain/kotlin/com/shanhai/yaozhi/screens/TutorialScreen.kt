@@ -13,9 +13,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shanhai.core.logic.TutorialEngine
 import com.shanhai.core.logic.TutorialStep
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 
 @Composable
 fun TutorialScreen(modifier: Modifier = Modifier) {
+    val gsState = LocalGameState.current
+    val _v = LocalGsVersion.current.value
+    val gs = gsState.value
     var completedOrder by remember { mutableIntStateOf(0) }
     var skipped by remember { mutableStateOf(false) }
 

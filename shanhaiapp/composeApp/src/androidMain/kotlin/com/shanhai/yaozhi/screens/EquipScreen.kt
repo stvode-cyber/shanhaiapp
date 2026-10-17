@@ -8,51 +8,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shanhai.core.data.EquipmentLibrary
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 import com.shanhai.yaozhi.components.EmptyState
 
+/** 装备库（只读展示）。 */
 @Composable
 fun EquipScreen(modifier: Modifier = Modifier) {
+    val gsState = LocalGameState.current
+    val _v = LocalGsVersion.current.value  // 订阅 → 资源变化自动刷新
+    val gs = gsState.value
     val equips = EquipmentLibrary.all
+
     Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
         Text("装备库（${equips.size} 件）", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("灵玉 ${gs.lingyu} ｜ 妖丹 ${gs.yaodan}", fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
         if (equips.isEmpty()) {
             EmptyState("🛡️", "暂无装备")
-        }
-        equips.forEach { eq ->
-            Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 1.dp,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                Row(modifier = Modifier.padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween) {
-                    Column {
-                        Text(eq.name, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text("${eq.slot.label} · ${eq.element?.label ?: "通用"} · ${eq.rarity.label}",
+        } else {
+            equips.forEach { e ->
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    tonalElevation = 2.dp,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text("${e.name}（${e.rarity.label}）", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                        Text("槽位 ${e.slot.name} · 五行 ${e.element?.name ?: "-"} · 攻${e.baseAtk} 防${e.baseDef} 速${e.baseSpd}",
                             fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Text("ATK+${eq.baseAtk} DEF+${eq.baseDef}", fontSize = 12.sp)
                 }
             }
         }
     }
-}
-
-private val com.shanhai.core.model.EquipSlot.label: String get() = when (this) {
-    com.shanhai.core.model.EquipSlot.WEAPON -> "武器"
-    com.shanhai.core.model.EquipSlot.ARMOR -> "防具"
-    com.shanhai.core.model.EquipSlot.ACCESSORY -> "饰品"
-}
-private val com.shanhai.core.model.Element.label: String get() = when (this) {
-    com.shanhai.core.model.Element.METAL -> "金"
-    com.shanhai.core.model.Element.WOOD -> "木"
-    com.shanhai.core.model.Element.EARTH -> "土"
-    com.shanhai.core.model.Element.WATER -> "水"
-    com.shanhai.core.model.Element.FIRE -> "火"
-    com.shanhai.core.model.Element.WIND -> "风"
-    com.shanhai.core.model.Element.THUNDER -> "雷"
-}
-private val com.shanhai.core.model.Rarity.label: String get() = when (this) {
-    com.shanhai.core.model.Rarity.FAN -> "凡"
-    com.shanhai.core.model.Rarity.LING -> "灵"
-    com.shanhai.core.model.Rarity.XIAN -> "仙"
-    com.shanhai.core.model.Rarity.SHEN -> "神"
 }

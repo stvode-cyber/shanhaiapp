@@ -17,6 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.shanhai.core.data.defaultRandom
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 import com.shanhai.yaozhi.theme.QingDai
 import com.shanhai.yaozhi.theme.ZhuSha
 import org.osmdroid.util.GeoPoint
@@ -47,6 +50,9 @@ fun MapScreen(
     onEnterCapture: (SpiritNode) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val gsState = LocalGameState.current
+    val _v = LocalGsVersion.current.value  // 订阅 → 资源变化自动刷新
+    val gs = gsState.value
     var selectedNode by remember { mutableStateOf<SpiritNode?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -91,6 +97,8 @@ fun MapScreen(
             ) {
                 Icon(Icons.Filled.Place, "巡妖图", tint = ZhuSha, modifier = Modifier.size(20.dp))
                 Text("巡妖图 · 踏破铁鞋", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("灵玉${gs.lingyu} 香${gs.incense}", fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 

@@ -128,7 +128,7 @@ private fun GameRoot(codex: Codex) {
                     modifier = Modifier.padding(padding).fillMaxSize())
 
                 // HUB tab 本身
-                null -> HubScreen(codex = codex,
+                null -> HubScreen(
                     onNavigate = { hubNav = it },
                     modifier = Modifier.padding(padding).fillMaxSize())
             }

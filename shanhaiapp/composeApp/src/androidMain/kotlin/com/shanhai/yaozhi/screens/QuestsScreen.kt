@@ -8,13 +8,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shanhai.core.quest.QuestLibrary
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 import com.shanhai.yaozhi.components.EmptyState
 
+/** 敕令任务（只读展示）。 */
 @Composable
 fun QuestsScreen(modifier: Modifier = Modifier) {
+    val gsState = LocalGameState.current
+    val _v = LocalGsVersion.current.value  // 订阅 → 资源变化自动刷新
+    val gs = gsState.value
     val quests = QuestLibrary.all
+
     Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
         Text("敕令任务（${quests.size} 条）", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("灵玉 ${gs.lingyu} ｜ 妖丹 ${gs.yaodan}", fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
         if (quests.isEmpty()) {
             EmptyState("📜", "暂无可接任务")

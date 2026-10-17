@@ -19,16 +19,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shanhai.core.logic.Codex
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 
 /**
  * HubScreen —— "我的"页面，次级 13 个功能入口全挂这里
+ * V2：从 LocalGameState.current.codex 取数据
  */
 @Composable
 fun HubScreen(
-    codex: Codex,
     onNavigate: (HubItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val gsState = LocalGameState.current
+    val _v = LocalGsVersion.current.value  // 订阅 → codex 变化自动刷新
+    val codex = gsState.value.codex
     val items = remember { HubItem.all }
 
     Column(modifier = modifier.fillMaxSize().padding(16.dp),
@@ -39,6 +44,8 @@ fun HubScreen(
             modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("山海妖志", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text("灵玉 ${gsState.value.lingyu} ｜ 妖丹 ${gsState.value.yaodan} ｜ 香火 ${gsState.value.incense}",
+                    fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("图鉴 ${codex.regionCaught()} / ${codex.regionTotal()} 妖",
                     fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(8.dp))

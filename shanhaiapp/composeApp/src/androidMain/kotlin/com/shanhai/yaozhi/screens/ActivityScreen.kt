@@ -11,9 +11,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shanhai.core.logic.ActivityEngine
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 
 @Composable
 fun ActivityScreen(modifier: Modifier = Modifier) {
+    val gsState = LocalGameState.current
+    val _v = LocalGsVersion.current.value
+    val gs = gsState.value
     val activities = remember { ActivityEngine.ACTIVITIES }
     var today by remember { mutableStateOf("2026-10-17") }
     val active = remember(today) { ActivityEngine.active(today) }

@@ -9,9 +9,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shanhai.core.logic.SeasonEngine
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 
 @Composable
 fun SeasonScreen(modifier: Modifier = Modifier) {
+    val gsState = LocalGameState.current
+    val _v = LocalGsVersion.current.value
+    val gs = gsState.value
     var xp by remember { mutableIntStateOf(0) }
 
     val curTier = SeasonEngine.tierFromXp(xp)

@@ -10,10 +10,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shanhai.core.logic.SectTechEngine
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 import com.shanhai.yaozhi.components.EmptyState
 
 @Composable
 fun SectScreen(modifier: Modifier = Modifier) {
+    val gsState = LocalGameState.current
+    val _v = LocalGsVersion.current.value
+    val gs = gsState.value
     val nodes = remember { SectTechEngine.NODES }
     var levels by remember { mutableStateOf(mutableMapOf<String, Int>()) }
 

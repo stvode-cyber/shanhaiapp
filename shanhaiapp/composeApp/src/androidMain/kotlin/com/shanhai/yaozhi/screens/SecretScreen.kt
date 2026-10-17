@@ -9,20 +9,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shanhai.core.data.MonsterPool
-import com.shanhai.core.data.defaultRandom
 import com.shanhai.core.logic.RegionTheme
 import com.shanhai.core.logic.SecretRealmEngine
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
+import com.shanhai.yaozhi.mutate
 
+/**
+ * 在家秘境 · V2
+ * 本地 freeEntries → gs.incense 真实值
+ * 按钮调 gs.enterSecretRealm()（内部扣香火 + 记事件）
+ */
 @Composable
 fun SecretScreen(modifier: Modifier = Modifier) {
+    val gsState = LocalGameState.current
+    val versionState = LocalGsVersion.current
+    val _v = versionState.value  // 订阅 → 进入秘境后香火刷新
+    val gs = gsState.value
+
     val themes = remember { RegionTheme.values().toList() }
-    var freeEntries by remember { mutableIntStateOf(2) }
     var lastSpawn by remember { mutableStateOf<List<String>>(emptyList()) }
 
     Column(modifier = modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("在家秘境", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text("每日免费 $freeEntries 次 · 耗尽后 ${SecretRealmEngine.INCENSE_COST} 香火/次",
+        Text("香火：${gs.incense} ｜ 每次消耗 ${SecretRealmEngine.INCENSE_COST} 香火",
             fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
         themes.forEach { theme ->
@@ -41,10 +52,10 @@ fun SecretScreen(modifier: Modifier = Modifier) {
                     }
                     Button(
                         onClick = {
-                            lastSpawn = SecretRealmEngine.generateSpawns(theme, SecretRealmEngine.SPAWN_COUNT)
-                            if (freeEntries > 0) freeEntries--
+                            val result = gsState.mutate(versionState) { it.enterSecretRealm() }
+                            lastSpawn = result?.spawns ?: emptyList()
                         },
-                        enabled = freeEntries > 0
+                        enabled = gs.incense >= SecretRealmEngine.INCENSE_COST
                     ) { Text("入秘境") }
                 }
             }
