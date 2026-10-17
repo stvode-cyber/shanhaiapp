@@ -1,43 +1,37 @@
 package com.shanhai.yaozhi
 
-import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shanhai.core.data.MonsterPool
 import com.shanhai.core.logic.Codex
-import com.shanhai.core.logic.GameState
 import com.shanhai.core.platform.OsmBootstrap
 import com.shanhai.yaozhi.screens.*
 import com.shanhai.yaozhi.theme.ShanhaiTheme
 
 /**
- * 山海妖志 · Android Compose 壳（v0.1.0）
- * V1 核心循环：巡妖图 → 收妖 → 妖典 → 试炼
+ * 山海妖志 · Android Compose 壳（v0.2.0）
+ * V1 核心循环 + V2 养成经济
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         OsmBootstrap.init(this)
-
-        val state = GameState()
         val codex = Codex(MonsterPool.all)
-
         setContent {
             ShanhaiTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    GameRoot(codex = codex, state = state)
+                    GameRoot(codex = codex)
                 }
             }
         }
@@ -45,39 +39,35 @@ class MainActivity : ComponentActivity() {
 }
 
 private enum class Tab(val label: String) {
-    MAP("巡妖图"), CAPTURE("收妖"), CODEX("妖典"), BATTLE("试炼"), ABOUT("关于")
+    MAP("巡妖"), CODEX("妖典"), BATTLE("试炼"),
+    CULTIVATE("养成"), EQUIP("装备"), FUSE("融合"),
+    TALENT("天赋"), STORE("商店"), QUESTS("敕令"),
+    ABOUT("关于")
 }
 
 @Composable
-private fun GameRoot(codex: Codex, state: GameState) {
+private fun GameRoot(codex: Codex) {
     var currentTab by remember { mutableStateOf(Tab.MAP) }
     var captureNode by remember { mutableStateOf<SpiritNode?>(null) }
 
-    // 如果在 CAPTURE tab 但没有选中节点 → 显示空状态
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             currentTab == Tab.MAP -> MapScreen(
-                onEnterCapture = { node ->
-                    captureNode = node
-                    currentTab = Tab.CAPTURE
-                },
+                onEnterCapture = { n -> captureNode = n; currentTab = Tab.BATTLE },
                 modifier = Modifier.fillMaxSize()
             )
-            currentTab == Tab.CAPTURE -> if (captureNode != null) {
-                CaptureScreen(
-                    nodeName = captureNode!!.name,
-                    onBack = { currentTab = Tab.MAP; captureNode = null },
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                CaptureEmpty(onPickFromMap = { currentTab = Tab.MAP })
-            }
             currentTab == Tab.CODEX -> CodexScreen(codex, modifier = Modifier.fillMaxSize())
             currentTab == Tab.BATTLE -> BattleScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.CULTIVATE -> CultivateScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.EQUIP -> EquipScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.FUSE -> FuseScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.TALENT -> TalentScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.STORE -> StoreScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.QUESTS -> QuestsScreen(modifier = Modifier.fillMaxSize())
             currentTab == Tab.ABOUT -> AboutScreen(codex, modifier = Modifier.fillMaxSize())
         }
 
-        // 底部导航
+        // 底部导航（Scrollable 支持 10 tab）
         NavigationBar(
             modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter)
         ) {
@@ -86,7 +76,7 @@ private fun GameRoot(codex: Codex, state: GameState) {
                     selected = currentTab == tab,
                     onClick = { currentTab = tab },
                     icon = { TabIcon(tab) },
-                    label = { Text(tab.label, fontSize = 11.sp) }
+                    label = { Text(tab.label, fontSize = 10.sp) }
                 )
             }
         }
@@ -97,55 +87,48 @@ private fun GameRoot(codex: Codex, state: GameState) {
 private fun TabIcon(tab: Tab) {
     val icon = when (tab) {
         Tab.MAP -> Icons.Filled.Place
-        Tab.CAPTURE -> Icons.Filled.MyLocation
         Tab.CODEX -> Icons.Filled.MenuBook
         Tab.BATTLE -> Icons.Filled.SportsEsports
+        Tab.CULTIVATE -> Icons.Filled.AutoAwesome
+        Tab.EQUIP -> Icons.Filled.Shield
+        Tab.FUSE -> Icons.Filled.Merge
+        Tab.TALENT -> Icons.Filled.Star
+        Tab.STORE -> Icons.Filled.ShoppingCart
+        Tab.QUESTS -> Icons.Filled.Assignment
         Tab.ABOUT -> Icons.Filled.Info
     }
-    Icon(icon, contentDescription = tab.label)
-}
-
-@Composable
-private fun CaptureEmpty(onPickFromMap: () -> Unit) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = androidx.compose.ui.Alignment.Center
-    ) {
-        Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-            Text("请先从巡妖图选一个灵脉节点", fontSize = 16.sp)
-            Spacer(Modifier.height(16.dp))
-            Button(onClick = onPickFromMap) { Text("去巡妖图") }
-        }
-    }
+    Icon(icon, contentDescription = tab.label, modifier = Modifier.size(20.dp))
 }
 
 @Composable
 private fun AboutScreen(codex: Codex, modifier: Modifier) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text("山海妖志 · v0.1.0", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        Text("Kotlin 2.0.21 + Compose BOM 2024.09.03", fontSize = 14.sp,
+        Text("山海妖志 · v0.2.0", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text("V1 核心循环 + V2 养成经济 已交付", fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         HorizontalDivider()
         Text("引擎健康度", fontSize = 18.sp, fontWeight = FontWeight.Medium)
         AboutRow("MonsterPool", "${MonsterPool.all.size} 妖")
-        AboutRow("Codex 总妖数", "${codex.regionTotal()}")
-        AboutRow("已收服", "${codex.regionCaught()}")
+        AboutRow("Codex", "${codex.regionTotal()} 妖")
         AboutRow("验证链", "706/706 + 75/75 + 30/30")
         HorizontalDivider()
-        Text("3D 状态", fontSize = 18.sp, fontWeight = FontWeight.Medium)
-        AboutRow("SceneView 路线", "❌ compileSdk 34 不兼容（需 37）")
-        AboutRow("osmdroid 2D 地图", "✅ 可用")
-        HorizontalDivider()
-        Text("V1 已交付", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-        AboutRow("① 巡妖图", "✅ osmdroid + 灵脉节点快选")
-        AboutRow("② 收妖", "✅ 光环收缩 + CaptureEngine")
-        AboutRow("③ 妖典", "✅ 列表 + 稀有/类别筛选 + 详情")
-        AboutRow("④ 试炼", "✅ 回合制 + BattleEngine 五行克制")
+        Text("V1 ✅", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        AboutRow("① 巡妖图 + 收妖", "✅ osmdroid + CaptureEngine")
+        AboutRow("② 妖典", "✅ 筛选 + 详情")
+        AboutRow("③ 试炼", "✅ 回合制 + BattleEngine")
+        Text("V2 ✅", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        AboutRow("④ 养成", "✅ CultivationEngine 升级/突破/进化")
+        AboutRow("⑤ 装备", "✅ EquipmentLibrary 展示")
+        AboutRow("⑥ 融合", "✅ FusionEngine.plan()")
+        AboutRow("⑦ 天赋", "✅ TalentEngine 三分支加点")
+        AboutRow("⑧ 商店", "✅ ShopEngine 焚香")
+        AboutRow("⑨ 敕令", "✅ QuestLibrary 列表")
+        Text("V3/V4 待做", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        AboutRow("副本/秘境/家园/宗门/赛季", "⬜")
+        AboutRow("荣誉/教程/活动/视觉润色", "⬜")
     }
 }
 
