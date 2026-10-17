@@ -53,7 +53,9 @@ class GameState(val codex: Codex = Codex(MonsterPool.all)) {
     var secretRealmLeft: Int = 3 // 每日秘境次数
     var lastDailyReset: String = "" // 上次每日重置日期 yyyy-MM-dd，用于跨天自动重置
     // ── ② LBS·AR / ③ 祈妖·副本·社交·经济 ──
-    var gachaSinceShen: Int = 0                              // 距上次出神抽数（硬保底状态）
+    var gachaNormalSinceShen: Int = 0                              // 通用池：距上次出神抽数（硬保底状态）
+    var gachaLimitedSinceShen: Int = 0                             // 限定神池：距上次出神抽数（硬保底状态）
+    var currentFormation: FormationTemplate? = null                 // 当前选的流派模板（null=未选）
     val dungeonEnteredToday: MutableMap<String, Int> = mutableMapOf() // 副本 id → 当日次数
     var faction: String? = null                              // 所属派系
     var strongholdNode: String? = null                       // 据点战占领节点
@@ -703,14 +705,15 @@ class GameState(val codex: Codex = Codex(MonsterPool.all)) {
      * 灵玉不足返回 null。重复妖转妖丹，新妖入队并推进图鉴；记录 GACHA 任务。
      * 返回抽卡结果列表（含稀有度与签文）。
      */
-    fun pullGacha(ten: Boolean): List<GachaEngine.GachaResult>? {
+    fun pullGacha(ten: Boolean, pool: GachaEngine.PoolType = GachaEngine.PoolType.NORMAL): List<GachaEngine.GachaResult>? {
         val cost = if (ten) GachaEngine.TEN_LINGYU else GachaEngine.SINGLE_LINGYU
         if (lingyu < cost) return null
         lingyu -= cost
-        val gstate = GachaEngine.GachaState(gachaSinceShen)
-        val results = if (ten) GachaEngine.tenPull(gstate, ::defaultRandom)
-        else listOf(GachaEngine.pull(gstate, ::defaultRandom))
-        gachaSinceShen = gstate.sinceShen
+        val gstate = GachaEngine.GachaState(gachaNormalSinceShen, gachaLimitedSinceShen)
+        val results = if (ten) GachaEngine.tenPull(gstate, pool, ::defaultRandom)
+        else listOf(GachaEngine.pull(gstate, pool, ::defaultRandom))
+        gachaNormalSinceShen = gstate.normalSinceShen
+        gachaLimitedSinceShen = gstate.limitedSinceShen
         for (r in results) {
             val monster = MonsterPool.byId(r.monsterId)
             val isNew = !codex.hasAny(r.monsterId)
@@ -896,7 +899,8 @@ class GameState(val codex: Codex = Codex(MonsterPool.all)) {
         equipment = equipment.toList(),
         nextEquipSeq = nextEquipSeq,
         equipped = equipped.mapValues { it.value.toMap() },
-        gachaSinceShen = gachaSinceShen,
+        gachaNormalSinceShen = gachaNormalSinceShen,
+        gachaLimitedSinceShen = gachaLimitedSinceShen,
         dungeonEntered = dungeonEnteredToday.toMap(),
         faction = faction,
         strongholdNode = strongholdNode,
@@ -944,7 +948,8 @@ class GameState(val codex: Codex = Codex(MonsterPool.all)) {
         nextEquipSeq = save.nextEquipSeq
         equipped.clear()
         for ((mid, slots) in save.equipped) equipped[mid] = slots.toMutableMap()
-        gachaSinceShen = save.gachaSinceShen
+        gachaNormalSinceShen = save.gachaNormalSinceShen
+        gachaLimitedSinceShen = save.gachaLimitedSinceShen
         dungeonEnteredToday.clear()
         dungeonEnteredToday.putAll(save.dungeonEntered)
         faction = save.faction

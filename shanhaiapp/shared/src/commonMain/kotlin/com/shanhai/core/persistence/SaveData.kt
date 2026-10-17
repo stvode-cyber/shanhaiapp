@@ -43,8 +43,9 @@ data class SaveData(
     val equipment: List<OwnedEquip> = emptyList(),   // 拥有的装备实例
     val nextEquipSeq: Int = 1,                       // 装备实例 id 自增序号
     val equipped: Map<String, Map<EquipSlot, String>> = emptyMap(), // 妖实例id → 槽位 → 装备实例id
-    // ── 祈妖抽卡 / 副本 / 社交 / 经济（② LBS·AR / ③ 祈妖·副本·社交·经济） ──
-    val gachaSinceShen: Int = 0,                          // 距上次出神已抽次数（硬保底）
+    // ── 祈妖抽卡（多池保底，各池独立计数） ──
+    val gachaNormalSinceShen: Int = 0,                    // 通用池：距上次出神已抽次数（硬保底）
+    val gachaLimitedSinceShen: Int = 0,                   // 限定神池：距上次出神已抽次数（硬保底）
     val dungeonEntered: Map<String, Int> = emptyMap(),   // 副本 id → 当日进入次数
     val faction: String? = null,                          // 所属派系（MAOSHAN/LONGHUSHAN/GEZAO）
     val strongholdNode: String? = null,                   // 据点战占领的节点名

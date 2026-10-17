@@ -7,8 +7,13 @@ import com.shanhai.core.logic.CaptureEngine
 import com.shanhai.core.logic.Combatant
 import com.shanhai.core.logic.CultivationEngine
 import com.shanhai.core.logic.EquipmentEngine
+import com.shanhai.core.logic.GachaEngine
+import com.shanhai.core.logic.FormationEngine
+import com.shanhai.core.logic.FormationTemplates
 import com.shanhai.core.logic.FusionEngine
 import com.shanhai.core.logic.GameState
+import com.shanhai.core.logic.FormationTemplate
+import com.shanhai.core.logic.SynergyId
 import com.shanhai.core.model.*
 import com.shanhai.core.data.EquipmentLibrary
 import com.shanhai.core.quest.*
@@ -455,6 +460,98 @@ class CoreTest {
         val b = GameState()
         b.applySaveData(SaveCodec.decode(json)!!)
         assertEquals(2, b.owned["i_x"]!!.tribulations)
+    }
+
+    // ── 限定神池 + 通用池保底（GDD 十四·经济） ──
+
+    @Test
+    fun `限定池硬保底 85 抽必神`() {
+        val state = GachaEngine.GachaState()
+        // 用 1.0（必非神 rng）连抽 84 次 → 第 85 次硬保底必神
+        repeat(84) { GachaEngine.pull(state, GachaEngine.PoolType.LIMITED) { 1.0 } }
+        assertEquals(84, state.limitedSinceShen)
+        val last = GachaEngine.pull(state, GachaEngine.PoolType.LIMITED) { 1.0 }
+        assertEquals(Rarity.SHEN, last.rarity)
+        assertEquals(0, state.limitedSinceShen) // 出神后归零
+    }
+
+    @Test
+    fun `通用池硬保底 90 抽必神`() {
+        val state = GachaEngine.GachaState()
+        repeat(89) { GachaEngine.pull(state, GachaEngine.PoolType.NORMAL) { 1.0 } }
+        assertEquals(89, state.normalSinceShen)
+        val last = GachaEngine.pull(state, GachaEngine.PoolType.NORMAL) { 1.0 }
+        assertEquals(Rarity.SHEN, last.rarity)
+        assertEquals(0, state.normalSinceShen)
+    }
+
+    @Test
+    fun `两池保底计数独立互不干扰`() {
+        val state = GachaEngine.GachaState()
+        // LIMITED 出神 → 只清零 limitedSinceShen，normalSinceShen 应保留
+        repeat(5) { GachaEngine.pull(state, GachaEngine.PoolType.NORMAL) { 1.0 } }
+        assertEquals(5, state.normalSinceShen)
+        GachaEngine.pull(state, GachaEngine.PoolType.LIMITED) { 0.0 } // 必神
+        assertEquals(0, state.limitedSinceShen)
+        assertEquals(5, state.normalSinceShen) // 通用池计数不受限影响
+    }
+
+    // ── 流派模板一键套用（GDD 七·技能系统） ──
+
+    @Test
+    fun `攻流派 优先输出技能`() {
+        val monster = MonsterPool.byId("yao_she")!!
+        val picked = FormationTemplates.pickFourSkills(monster, FormationTemplate.OFFENSIVE)
+        assertEquals(4, picked.size)
+        // 第一轮应优先 ATTACK / ELEMENT / PASSIVE（至少 1 个）
+        val primaryTypes = setOf(SkillType.ATTACK, SkillType.ELEMENT, SkillType.PASSIVE)
+        val primaryCount = picked.count { it.type in primaryTypes }
+        assertTrue(primaryCount >= 1, "攻流派应至少挑到 1 个输出型技能，实际全非输出")
+    }
+
+    @Test
+    fun `防流派 优先护盾恢复技能`() {
+        val monster = MonsterPool.byId("gui_guijia")!!
+        val picked = FormationTemplates.pickFourSkills(monster, FormationTemplate.DEFENSIVE)
+        assertEquals(4, picked.size)
+        val primaryTypes = setOf(SkillType.DEFENSE, SkillType.SUPPORT, SkillType.PASSIVE)
+        val primaryCount = picked.count { it.type in primaryTypes }
+        assertTrue(primaryCount >= 1, "防流派应至少挑到 1 个防御型技能")
+    }
+
+    @Test
+    fun `一键套用 队伍每只妖都返回 4 个技能`() {
+        val team = listOfNotNull(
+            MonsterPool.byId("yao_she"),
+            MonsterPool.byId("gui_guijia"),
+            MonsterPool.byId("jing_denglong"),
+        )
+        for (tpl in FormationTemplate.values()) {
+            val result = FormationTemplates.apply(team, tpl)
+            assertEquals(team.size, result.size)
+            for ((mid, skills) in result) {
+                assertTrue(skills.size == 4, "$tpl 对 $mid 未返回 4 技能")
+            }
+        }
+    }
+
+    @Test
+    fun `羁绊评估 五行齐全激活相生阵`() {
+        // METAL=jing_tongjing, WOOD=jing_saozhou, WATER=yao_she, FIRE=jing_denglong, EARTH=guai_nianshou
+        val team = listOfNotNull(
+            MonsterPool.byId("jing_tongjing"),   // 金
+            MonsterPool.byId("jing_saozhou"),    // 木
+            MonsterPool.byId("yao_she"),         // 水
+            MonsterPool.byId("jing_denglong"),   // 火
+            MonsterPool.byId("guai_nianshou"),   // 土
+            MonsterPool.byId("yao_hu"),          // 火（凑 6 只）
+        )
+        val elements = team.map { it.element }.toSet()
+        assertTrue(elements.containsAll(listOf(Element.METAL, Element.WOOD, Element.WATER, Element.FIRE, Element.EARTH)),
+            "队伍应包含五行，实际：$elements")
+        val syn = FormationEngine.evaluate(team)
+        assertTrue(syn.any { it.id == SynergyId.XIANGSHENG }, "五行齐全应激活相生阵")
+        assertEquals(2, syn.first { it.id == SynergyId.XIANGSHENG }.ultimateCharges)
     }
 
 }
