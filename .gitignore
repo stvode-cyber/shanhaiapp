@@ -23,7 +23,9 @@ shanhaiapp/keystores/*.properties
 
 # ===== 归档/临时 =====
 .workbuddy/artifacts/
-.trae/
+.trae/artifacts/
+.trae/cache/
+.trae/tmp/
 
 # ===== Gradle 本地缓存 =====
 shanhaiapp/.gradle/
