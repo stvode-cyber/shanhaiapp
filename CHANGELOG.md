@@ -7,6 +7,9 @@
 
 ## 2026-10
 
+- **2026-10-17 · 文档体系升级** · 17 模块总纲全量同步 v0.4.0（引擎→Screen 绑定表 + 状态修正）、00_工程总纲去过时、STATUS 瘦身为纯导航、每日日志补档。GitHub b54f349 + 66bc3c8（→ 各模块 00_总纲）。
+- **2026-10-17 · AGENTS §11 瘦身** · 345→283 行，删模板示例，实时数据统一走工作台帐①⑦（→ AGENTS.md）。
+- **2026-10-17 · v1.0.0-compose Release** · tag + push GitHub，三重验证链全绿（→ GitHub Releases）。
 - **2026-10-17 · v0.4.0 视觉润色** · ShanhaiTheme 升级 Typography+Shapes+Dark、MainActivity 重构 Scaffold+5 核心 tab+Hub 网格+AnimatedContent 淡入淡出、HubScreen 18 功能入口+图鉴进度条。GitHub ba2912a（→ composeApp/）。
 - **2026-10-17 · V4 收尾 3 Screen** · HonorScreen（荣誉勋章称号）+ TutorialScreen（新手引导步骤）+ ActivityScreen（限时活动聚合）。GitHub 0abe48a（→ composeApp/screens/）。
 - **2026-10-17 · V3 副本社交 5 Screen** · DungeonScreen（四类副本）+ SecretScreen（4 主题秘境）+ HomesteadScreen（离线产出）+ SectScreen（宗门科技树）+ SeasonScreen（赛季通行证）。GitHub 272eaf9（→ composeApp/screens/）。
