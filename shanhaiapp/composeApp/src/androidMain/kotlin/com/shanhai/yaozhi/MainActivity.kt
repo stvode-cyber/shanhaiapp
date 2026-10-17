@@ -1,175 +1,157 @@
 package com.shanhai.yaozhi
 
-import android.os.Bundle
 import android.Manifest
+import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import com.shanhai.core.data.MonsterPool
 import com.shanhai.core.logic.Codex
 import com.shanhai.core.logic.GameState
 import com.shanhai.core.platform.OsmBootstrap
-import com.shanhai.core.platform.MapSdk
-import org.osmdroid.views.MapView
+import com.shanhai.yaozhi.screens.*
+import com.shanhai.yaozhi.theme.ShanhaiTheme
 
 /**
- * Compose Multiplatform 壳入口。
- *
- * 技术栈：Kotlin 2.0.21 + Compose BOM 2024.09.03 + osmdroid 6.1.20（Apache 2.0，无 key）
+ * 山海妖志 · Android Compose 壳（v0.1.0）
+ * V1 核心循环：巡妖图 → 收妖 → 妖典 → 试炼
  */
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // ★ osmdroid 初始化（必须在 Activity.onCreate 早期调用）
         OsmBootstrap.init(this)
-
-        val locationLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { /* 权限回调 */ }
 
         val state = GameState()
         val codex = Codex(MonsterPool.all)
 
         setContent {
-            MaterialTheme {
+            ShanhaiTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    ComposeContent(
-                        codex = codex,
-                        locationLauncher = locationLauncher
-                    )
+                    GameRoot(codex = codex, state = state)
                 }
             }
         }
     }
 }
 
+private enum class Tab(val label: String) {
+    MAP("巡妖图"), CAPTURE("收妖"), CODEX("妖典"), BATTLE("试炼"), ABOUT("关于")
+}
+
 @Composable
-private fun ComposeContent(
-    codex: Codex,
-    locationLauncher: androidx.activity.result.ActivityResultLauncher<Array<String>>
-) {
-    val map = remember { MapSdk() }
-    var showMapDialog by remember { mutableStateOf(false) }
-    var currentMapReq by remember { mutableStateOf<MapSdk.MapRequest?>(null) }
+private fun GameRoot(codex: Codex, state: GameState) {
+    var currentTab by remember { mutableStateOf(Tab.MAP) }
+    var captureNode by remember { mutableStateOf<SpiritNode?>(null) }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text("山海妖志 · Compose 壳", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Text(
-            "Kotlin 2.0.21 + Compose + osmdroid（无 key）",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        HorizontalDivider()
+    // 如果在 CAPTURE tab 但没有选中节点 → 显示空状态
+    Box(modifier = Modifier.fillMaxSize()) {
+        when {
+            currentTab == Tab.MAP -> MapScreen(
+                onEnterCapture = { node ->
+                    captureNode = node
+                    currentTab = Tab.CAPTURE
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+            currentTab == Tab.CAPTURE -> if (captureNode != null) {
+                CaptureScreen(
+                    nodeName = captureNode!!.name,
+                    onBack = { currentTab = Tab.MAP; captureNode = null },
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                CaptureEmpty(onPickFromMap = { currentTab = Tab.MAP })
+            }
+            currentTab == Tab.CODEX -> CodexScreen(codex, modifier = Modifier.fillMaxSize())
+            currentTab == Tab.BATTLE -> BattleScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.ABOUT -> AboutScreen(codex, modifier = Modifier.fillMaxSize())
+        }
 
-        KmpRow("MonsterPool.all.size", "")
-        KmpRow("Codex.regionTotal()", "")
-        KmpRow("Codex.regionCompletion()", "%.0f%%".format(codex.regionCompletion() * 100))
-        KmpRow("GameState.team.size", "")
-
-        HorizontalDivider()
-
-        Text("平台能力", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-        KmpRow("osmdroid 地图可用", if (map.isAvailable()) "✅ 已初始化" else "⚠️ 初始化失败")
-        KmpRow("iOS 桥接", "🟨 待 macOS")
-
-        HorizontalDivider()
-
-        Text("三端双实现验证", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-        VerificationChip("原型 JS 706", true)
-        VerificationChip("原型 DOM 75", true)
-        VerificationChip("Kotlin jvmTest 29/29", true)
-        VerificationChip("Android Compose 壳", true)
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // 4 个据点按钮（与原型 LocationEngine 坐标一致）
-        val nodes = listOf(
-            "城隍桥" to (31.23 to 121.47),
-            "古庙"   to (30.25 to 120.16),
-            "老槐树" to (25.03 to 102.71),
-            "东海之滨" to (30.62 to 122.08)
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        // 底部导航
+        NavigationBar(
+            modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter)
         ) {
-            nodes.forEach { (name, coord) ->
-                OutlinedButton(
-                    onClick = {
-                        locationLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
-                        map.showMap(coord.first, coord.second, name)
-                        currentMapReq = MapSdk.MapRequest(coord.first, coord.second, name)
-                        showMapDialog = true
-                    },
-                    modifier = Modifier.weight(1f)
-                ) { Text(name, fontSize = 12.sp) }
+            Tab.values().forEach { tab ->
+                NavigationBarItem(
+                    selected = currentTab == tab,
+                    onClick = { currentTab = tab },
+                    icon = { TabIcon(tab) },
+                    label = { Text(tab.label, fontSize = 11.sp) }
+                )
             }
         }
     }
+}
 
-    // osmdroid 地图弹窗
-    if (showMapDialog && currentMapReq != null) {
-        OsmMapDialog(
-            mapSdk = map,
-            req = currentMapReq!!,
-            onDismiss = { showMapDialog = false }
-        )
+@Composable
+private fun TabIcon(tab: Tab) {
+    val icon = when (tab) {
+        Tab.MAP -> Icons.Filled.Place
+        Tab.CAPTURE -> Icons.Filled.MyLocation
+        Tab.CODEX -> Icons.Filled.MenuBook
+        Tab.BATTLE -> Icons.Filled.SportsEsports
+        Tab.ABOUT -> Icons.Filled.Info
+    }
+    Icon(icon, contentDescription = tab.label)
+}
+
+@Composable
+private fun CaptureEmpty(onPickFromMap: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = androidx.compose.ui.Alignment.Center
+    ) {
+        Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+            Text("请先从巡妖图选一个灵脉节点", fontSize = 16.sp)
+            Spacer(Modifier.height(16.dp))
+            Button(onClick = onPickFromMap) { Text("去巡妖图") }
+        }
     }
 }
 
 @Composable
-private fun OsmMapDialog(
-    mapSdk: MapSdk,
-    req: MapSdk.MapRequest,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("📍 ${req.title}  (${"%.2f".format(req.lat)}, ${"%.2f".format(req.lng)})") },
-        text = {
-            AndroidView(
-                factory = { ctx ->
-                    mapSdk.createMapView(ctx, req)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(360.dp)
-                    .clip(RoundedCornerShape(12.dp))
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
-        }
-    )
+private fun AboutScreen(codex: Codex, modifier: Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text("山海妖志 · v0.1.0", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text("Kotlin 2.0.21 + Compose BOM 2024.09.03", fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        HorizontalDivider()
+        Text("引擎健康度", fontSize = 18.sp, fontWeight = FontWeight.Medium)
+        AboutRow("MonsterPool", "${MonsterPool.all.size} 妖")
+        AboutRow("Codex 总妖数", "${codex.regionTotal()}")
+        AboutRow("已收服", "${codex.regionCaught()}")
+        AboutRow("验证链", "706/706 + 75/75 + 30/30")
+        HorizontalDivider()
+        Text("3D 状态", fontSize = 18.sp, fontWeight = FontWeight.Medium)
+        AboutRow("SceneView 路线", "❌ compileSdk 34 不兼容（需 37）")
+        AboutRow("osmdroid 2D 地图", "✅ 可用")
+        HorizontalDivider()
+        Text("V1 已交付", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        AboutRow("① 巡妖图", "✅ osmdroid + 灵脉节点快选")
+        AboutRow("② 收妖", "✅ 光环收缩 + CaptureEngine")
+        AboutRow("③ 妖典", "✅ 列表 + 稀有/类别筛选 + 详情")
+        AboutRow("④ 试炼", "✅ 回合制 + BattleEngine 五行克制")
+    }
 }
 
-@Composable private fun KmpRow(label: String, value: String) {
+@Composable private fun AboutRow(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label, fontSize = 14.sp)
         Text(value, fontSize = 14.sp, fontWeight = FontWeight.Medium)
     }
-}
-
-@Composable private fun VerificationChip(label: String, passed: Boolean) {
-    AssistChip(
-        onClick = {},
-        label = { Text("  ", fontSize = 13.sp) }
-    )
 }

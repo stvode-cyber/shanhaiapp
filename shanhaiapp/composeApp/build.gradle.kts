@@ -56,9 +56,14 @@ kotlin {
                 implementation("androidx.compose.ui:ui")
                 implementation("androidx.compose.ui:ui-graphics")
                 implementation("androidx.compose.material3:material3")
+                implementation("androidx.compose.material:material-icons-extended")
                 implementation("androidx.activity:activity-compose")
                 // osmdroid — OpenStreetMap 原生地图 SDK（Apache 2.0，无需 key）
                 implementation("org.osmdroid:osmdroid-android:6.1.20")
+                // ★ SceneView 真 3D — 暂去掉依赖（compileSdk 34 需 SceneView 4.0+，但全系列要求 compileSdk 37 不兼容）
+                // 方案备选：(a) Gradle 8.11 + AGP 8.10 + compileSdk 36 + SceneView 4.51（需升整套，Kotlin 2.0.21 可能不兼容 AGP 8.10）
+                //          (b) 用 Sceneform 1.15（Google 废弃但 compileSdk 要求低，View-based 需 AndroidView 包装）
+                //          (c) 纯 OpenGL ES + GLSurfaceView + AndroidView（工作量大但零依赖限制）
             }
         }
     }

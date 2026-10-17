@@ -10,6 +10,7 @@ composeBom = "2024.09.03"
 navigationCompose = "2.8.4"
 junit = "4.13.2"
 androidxTest = "1.6.1"
+# sceneview 暂不用 — compileSdk 34 与 SceneView 4.x 系列不兼容（需 37），升 AGP/Gradle 有连锁风险
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
