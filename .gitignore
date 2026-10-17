@@ -1,0 +1,33 @@
+# ===== 本地构建 =====
+build/
+.gradle/
+local.properties
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# ===== 语言运行时 =====
+__pycache__/
+*.pyc
+*.pyo
+node_modules/
+*.log
+
+# ===== 敏感凭证 =====
+shanhaiapp/keystores/*.keystore
+shanhaiapp/keystores/*.jks
+shanhaiapp/keystores/*.properties
+
+# ===== 归档/临时 =====
+.workbuddy/artifacts/
+.trae/
+
+# ===== Gradle 本地缓存 =====
+shanhaiapp/.gradle/
+shanhaiapp/gradle-app.setting
+
+# ===== Kotlin =====
+shanhaiapp/.kotlin/

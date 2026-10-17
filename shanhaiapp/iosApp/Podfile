@@ -1,0 +1,14 @@
+# ShanHai 山海妖志 iOS App Podfile
+# macOS 上执行：`pod install` → 会生成 iosApp.xcworkspace + Pods/ + ShanHaiKmp.framework
+# Windows 上 pod 命令不存在，跳过（iosApp 仍可独立运行，用 PlatformBridge.swift 占位）
+
+platform :ios, '15.0'
+
+target 'iosApp' do
+  # ShanHaiKmp — KMP shared 模块（macOS 上 gradle podInstall 后自动出现在 Pods/）
+  # Windows 上 pod 解析失败 → 用 :shared_src 占位路径
+  pod 'ShanHaiKmp', :path => '../../shared/build/cocoapods/framework'
+
+  # 平台依赖（等正式集成高德地图后打开）
+  # pod 'AMap3DMap', '9.8.0'
+end

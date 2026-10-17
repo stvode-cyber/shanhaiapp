@@ -1,0 +1,92 @@
+{
+  "tabs": [
+    {
+      "name": "map",
+      "screenshot": "01_map.png",
+      "has_content": true
+    },
+    {
+      "name": "codex",
+      "screenshot": "02_codex.png",
+      "has_content": true
+    },
+    {
+      "name": "gacha",
+      "screenshot": "03_gacha.png",
+      "has_content": true
+    },
+    {
+      "name": "battle",
+      "screenshot": "04_battle.png",
+      "has_content": true
+    },
+    {
+      "name": "cultivate",
+      "screenshot": "05_cultivate.png",
+      "has_content": true
+    },
+    {
+      "name": "quests",
+      "screenshot": "06_quests.png",
+      "has_content": true
+    },
+    {
+      "name": "sect",
+      "screenshot": "07_sect.png",
+      "has_content": true
+    },
+    {
+      "name": "equip",
+      "screenshot": "08_equip.png",
+      "has_content": true
+    },
+    {
+      "name": "dungeon",
+      "screenshot": "09_dungeon.png",
+      "has_content": true
+    },
+    {
+      "name": "secret",
+      "screenshot": "10_secret.png",
+      "has_content": true
+    },
+    {
+      "name": "homestead",
+      "screenshot": "11_homestead.png",
+      "has_content": true
+    },
+    {
+      "name": "store",
+      "screenshot": "12_store.png",
+      "has_content": true
+    },
+    {
+      "name": "season",
+      "screenshot": "13_season.png",
+      "has_content": true
+    },
+    {
+      "name": "honor",
+      "screenshot": "14_honor.png",
+      "has_content": true
+    },
+    {
+      "name": "tutorial",
+      "screenshot": "15_tutorial.png",
+      "has_content": true
+    },
+    {
+      "name": "platform",
+      "screenshot": "16_platform.png",
+      "has_content": true
+    }
+  ],
+  "errors": [],
+  "interactions": [
+    "签到 alert: 签到成功！第 1 天 · 香火 +10（封顶 70）",
+    "荣誉称号区域: 存在",
+    "平台选型快照: 高德=True, AR降级=True"
+  ],
+  "console_errors": [],
+  "tab_count": 16
+}

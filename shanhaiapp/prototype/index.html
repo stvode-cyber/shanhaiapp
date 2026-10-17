@@ -1,0 +1,2344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>山海妖志 · 巡妖录（可运行原型）</title>
+<style>
+  :root{
+    --paper:#efe7d3; --paper2:#e6dcc2; --panel:#f8f2e2; --panel2:#f2ead4;
+    --ink:#332b22; --ink2:#5c5040; --line:#c9b896; --line2:#d9ccae;
+    --jade:#2f6b5e; --jade-d:#235349; --cinnabar:#b23a2e; --gold:#bd9a3c;
+    --r-fan:#9a8255; --r-ling:#2f8f5b; --r-xian:#2f6fb2; --r-shen:#9b6bd0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"KaiTi","STKaiti","Songti SC","SimSun",serif;
+    color:var(--ink);
+    background:
+      radial-gradient(120% 80% at 50% 0%, #f4ecd8 0%, var(--paper) 55%, var(--paper2) 100%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .88 0 0 0 0 .83 0 0 0 0 .72 0 0 0 .06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    background-blend-mode:multiply;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 12px 40px;}
+  /* 顶栏 */
+  #topbar{
+    position:sticky;top:0;z-index:20;
+    background:linear-gradient(180deg, #2f6b5e 0%, #235349 100%);
+    color:#f6efdc;border-bottom:3px solid var(--gold);
+    box-shadow:0 2px 10px rgba(0,0,0,.18);
+  }
+  #topbar .row{max-width:880px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:10px 14px;flex-wrap:wrap;}
+  #topbar .title{font-size:20px;letter-spacing:3px;font-weight:bold;margin-right:8px;text-shadow:0 1px 0 rgba(0,0,0,.3);position:relative;padding-bottom:2px;}
+  #topbar .title::after{content:"";position:absolute;bottom:0;left:4px;right:4px;height:2px;background:var(--gold);}
+  #topbar .title::before{content:"●";position:absolute;top:-10px;right:-4px;font-size:8px;color:var(--cinnabar);line-height:1;}
+  #topbar .res{display:flex;gap:12px;flex-wrap:wrap;font-size:14px;}
+  #topbar .res b{color:#ffe9b0;}
+  #topbar .codex-pill{margin-left:auto;background:rgba(255,255,255,.14);padding:4px 12px;border-radius:20px;font-size:13px;}
+  /* 标签 */
+  #tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 4px 4px;position:sticky;top:46px;z-index:15;
+        background:linear-gradient(180deg,var(--paper) 70%, rgba(239,231,211,0));}
+  .tab{flex:0 0 auto;padding:8px 14px;border:1px solid var(--line);background:var(--panel2);
+       border-radius:10px 10px 0 0;cursor:pointer;font-size:15px;color:var(--ink2);
+       border-bottom:none;white-space:nowrap;}
+  .tab.active{background:var(--panel);color:var(--jade-d);font-weight:bold;box-shadow:0 -2px 0 var(--jade) inset;position:relative;}
+  .tab.active::before{content:"";position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:6px;height:6px;border-radius:50%;background:var(--cinnabar);box-shadow:0 0 0 2px var(--panel);}
+  /* 通用面板 */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:8px;
+         box-shadow:0 2px 8px rgba(80,60,20,.08);}
+  .panel h2{margin:0 0 10px;font-size:18px;color:var(--jade-d);border-left:4px solid var(--jade);padding-left:10px;letter-spacing:1px;}
+  .muted{color:var(--ink2);font-size:13px;line-height:1.7;}
+  .grid{display:grid;gap:10px;}
+  .grid.c2{grid-template-columns:repeat(2,1fr);}
+  .grid.c3{grid-template-columns:repeat(3,1fr);}
+  .grid.c4{grid-template-columns:repeat(4,1fr);}
+  .card{background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:12px;text-align:center;cursor:pointer;
+        transition:transform .08s ease, box-shadow .12s ease;}
+  .card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(80,60,20,.16);}
+  .card .name{font-size:16px;font-weight:bold;}
+  .card .sub{font-size:12px;color:var(--ink2);margin-top:4px;}
+  .badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;color:#fff;}
+  .b-fan{background:var(--r-fan);} .b-ling{background:var(--r-ling);} .b-xian{background:var(--r-xian);} .b-shen{background:var(--r-shen);}
+  .e-badge{display:inline-block;width:20px;height:20px;line-height:20px;border-radius:50%;color:#fff;font-size:12px;text-align:center;margin-left:4px;}
+  .btn{display:inline-block;padding:9px 16px;border:1px solid var(--jade);background:var(--jade);color:#f6efdc;border-radius:8px;
+       cursor:pointer;font-size:15px;font-family:inherit;letter-spacing:1px;}
+  .btn:hover{background:var(--jade-d);}
+  .btn.ghost{background:transparent;color:var(--jade-d);}
+  .btn.red{background:var(--cinnabar);border-color:var(--cinnabar);}
+  .btn.red:hover{filter:brightness(.92);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn.sm{padding:6px 10px;font-size:13px;}
+  .row-flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .spacer{flex:1;}
+  .log{background:#2b241b;color:#e8dcc0;border-radius:8px;padding:10px;font-size:13px;line-height:1.6;max-height:200px;overflow:auto;font-family:"Courier New",monospace;}
+  .log .crit{color:#ff9b6b;} .log .good{color:#8fe39a;} .log .bad{color:#ff8a7a;}
+  .bar{height:10px;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:#e3d8bd;}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--jade),var(--gold));}
+  select{font-family:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--ink);}
+  .hint{background:#fff7e3;border:1px dashed var(--gold);border-radius:8px;padding:10px;font-size:13px;color:#7a5e1f;margin-top:10px;}
+  .warn{background:#fdeceA;border:1px solid var(--cinnabar);color:var(--cinnabar);border-radius:8px;padding:10px;font-size:14px;margin-top:10px;}
+  .ok{background:#e7f5ec;border:1px solid var(--r-ling);color:var(--r-ling);border-radius:8px;padding:10px;font-size:14px;margin-top:10px;}
+  /* 妖头像 */
+  .orb{width:54px;height:54px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:22px;
+       color:#fff;font-weight:bold;border:2px solid rgba(255,255,255,.5);box-shadow:0 2px 6px rgba(0,0,0,.2);}
+  .orb.sm{width:38px;height:38px;font-size:16px;}
+  .mon-card .orb{width:60px;height:60px;font-size:26px;display:block;margin:0 auto 6px;}
+  .silhouette{filter:grayscale(1) brightness(.55) contrast(.7);opacity:.5;}
+  .toggle{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--ink2);}
+  /* 收妖弹层 */
+  #capture-modal{position:fixed;inset:0;background:rgba(20,16,10,.82);display:flex;align-items:center;justify-content:center;z-index:100;}
+  .cap-box{background:var(--panel);border:2px solid var(--gold);border-radius:16px;padding:20px;width:340px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.5);}
+  #ring-canvas{display:block;margin:0 auto;background:radial-gradient(circle at 50% 45%, #fbf6e6, #e9dcc0);border-radius:50%;}
+  .cap-info{font-size:14px;margin:10px 0;color:var(--ink2);}
+  .cap-info b{color:var(--jade-d);}
+  .hidden{display:none !important;}
+  .divider{height:1px;background:var(--line2);margin:12px 0;}
+  .pill{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--panel2);border:1px solid var(--line2);font-size:12px;color:var(--ink2);margin:2px;}
+  .skill-line{font-size:13px;color:var(--ink2);padding:3px 0;}
+  .footer-note{margin-top:24px;font-size:12px;color:var(--ink2);text-align:center;line-height:1.8;}
+  .stat-tbl{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px;}
+  .stat-tbl td{padding:5px 8px;border-bottom:1px dashed var(--line2);}
+  .stat-tbl td:first-child{color:var(--ink2);width:40%;}
+  .lbs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;}
+  .lbs-node{background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:all .18s;position:relative;}
+  .lbs-node:hover{border-color:var(--jade);transform:translateY(-2px);box-shadow:0 4px 16px rgba(47,107,94,.2);}
+  .lbs-node.active{border-color:var(--cinnabar);background:var(--panel);box-shadow:0 0 0 2px rgba(178,58,46,.15);}
+  .lbs-node .lbs-icon{font-size:28px;margin-bottom:4px;}
+  .lbs-node .lbs-name{font-weight:bold;color:var(--jade-d);font-size:14px;letter-spacing:1px;}
+  .lbs-node .lbs-coord{font-size:11px;color:var(--ink2);margin-top:4px;font-family:'Courier New',monospace;}
+  .lbs-frame-wrap{margin-top:14px;border:2px solid var(--gold);border-radius:12px;overflow:hidden;background:#f0efe9;position:relative;}
+  .lbs-frame-wrap iframe{width:100%;height:380px;border:none;display:block;}
+  .lbs-frame-wrap .lbs-frame-header{background:linear-gradient(90deg,var(--jade),var(--jade-d));color:var(--paper);padding:6px 12px;font-size:13px;letter-spacing:2px;display:flex;justify-content:space-between;align-items:center;}
+  .lbs-frame-wrap .lbs-frame-header .lbs-close{cursor:pointer;font-size:18px;opacity:.8;}
+  .lbs-frame-wrap .lbs-frame-header .lbs-close:hover{opacity:1;}
+  /* ── 妖融合 ── */
+  .fuse-card .orb{font-size:32px;margin-bottom:4px;}
+  .fuse-result-figure{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;}
+  .fuse-result-figure .fuse-plus,.fuse-result-figure .fuse-arrow{font-size:28px;color:var(--cinnabar);font-weight:bold;}
+  .fuse-result-figure .fuse-arrow{color:var(--jade);}
+  .fuse-result-figure .fuse-new{border:2px solid var(--gold);border-radius:12px;padding:10px;background:rgba(189,154,60,.08);}
+  .fuse-recipe-card{border-left:3px solid var(--cinnabar);}
+  /* ── 阵容协同 ── */
+  .fm-team-slot{min-height:88px;border:2px dashed var(--jade);border-radius:10px;padding:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;position:relative;}
+  .fm-team-slot:hover{border-color:var(--cinnabar);background:rgba(178,58,46,.05);}
+  .fm-team-slot.filled{border-style:solid;border-color:var(--jade);background:rgba(47,107,94,.06);}
+  .fm-team-slot .fm-orb{font-size:28px;margin-right:6px;}
+  .fm-add-hint{color:var(--jade);opacity:.5;font-size:13px;}
+  .fm-synergy-row{display:flex;align-items:center;gap:10px;padding:10px;border-left:3px solid var(--gold);background:rgba(189,154,60,.06);border-radius:0 10px 10px 0;margin-bottom:8px;}
+  .fm-synergy-row .fm-sy-name{font-weight:bold;color:var(--jade-d);}
+  .fm-synergy-row .fm-sy-mul{color:var(--cinnabar);font-weight:bold;font-size:15px;}
+  .fm-mul-bar{height:10px;background:rgba(47,107,94,.15);border-radius:5px;overflow:hidden;margin-top:4px;}
+  .fm-mul-bar-fill{height:100%;background:linear-gradient(90deg,var(--jade),var(--cinnabar));border-radius:5px;transition:width .3s;}
+  .fm-combo-row{display:flex;align-items:center;gap:10px;padding:8px;background:rgba(178,58,46,.05);border-radius:8px;margin-bottom:6px;}
+  .fm-combo-row .fm-cb-name{font-weight:bold;color:var(--cinnabar);}
+  .fm-pick-grid .card.active{border-color:var(--cinnabar);box-shadow:0 0 0 2px var(--cinnabar);}
+  .fm-pick-counter{font-size:12px;color:var(--muted);}
+  /* ── 天赋分配 ── */
+  .tal-branch{border:2px solid var(--paper2);border-radius:12px;padding:12px;transition:all .15s;background:rgba(230,220,194,.2);}
+  .tal-branch.can-invest{border-color:var(--jade);background:rgba(47,107,94,.06);}
+  .tal-branch.full{border-color:var(--cinnabar);background:rgba(178,58,46,.06);}
+  .tal-branch.no-points{opacity:.5;}
+  .tal-layers{display:flex;gap:6px;margin-top:8px;}
+  .tal-layer{width:28px;height:28px;border-radius:50%;border:2px solid var(--paper2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;background:var(--paper);}
+  .tal-layer.filled{border-color:var(--gold);background:linear-gradient(135deg,var(--gold),#a67f2a);color:#fff;box-shadow:0 2px 4px rgba(0,0,0,.15);}
+  .tal-layer.locked{border-color:var(--paper2);background:transparent;color:var(--paper2);}
+  .tal-invest-btn{margin-top:10px;}
+  .tal-points-bar{display:flex;align-items:center;gap:8px;margin:10px 0;}
+  .tal-points-bar .tal-bar-track{flex:1;height:12px;background:rgba(47,107,94,.15);border-radius:6px;overflow:hidden;position:relative;}
+  .tal-points-bar .tal-bar-fill{height:100%;background:linear-gradient(90deg,var(--jade),var(--gold));border-radius:6px;transition:width .3s;}
+  .tal-points-bar .tal-bar-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:var(--jade-d);}
+  .tal-mult-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--paper2);}
+  .tal-mult-row:last-child{border-bottom:none;}
+  .tal-monster-card{cursor:pointer;transition:all .15s;}
+  .tal-monster-card.active{border-color:var(--cinnabar);box-shadow:0 0 0 2px var(--cinnabar);}
+  .tal-branch-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .tal-branch-name{font-weight:bold;font-size:15px;}
+  .tal-branch-gain{font-size:12px;color:var(--cinnabar);font-weight:bold;}
+</style>
+</head>
+<body>
+  <div id="topbar">
+    <div class="row">
+      <span class="title">山海妖志</span>
+      <div class="res">
+        <span>灵玉 <b id="r-lingyu">0</b></span>
+        <span>妖丹 <b id="r-yaodan">0</b></span>
+        <span>香火 <b id="r-incense">0</b></span>
+        <span>信誉 <b id="r-rep">0</b></span>
+        <span>疲劳 <b id="r-fat">0</b></span>
+        <span>段位 <b id="r-rank">炼气 0/100</b></span>
+        <span>秘境 <b id="r-secret">3</b></span>
+      </div>
+      <span class="codex-pill" id="r-codex">图鉴 0/100</span>
+    </div>
+  </div>
+
+  <nav id="tabs">
+    <div class="tab active" data-act="tab" data-arg="map">巡妖图</div>
+    <div class="tab" data-act="tab" data-arg="codex">妖典</div>
+    <div class="tab" data-act="tab" data-arg="gacha">祈妖</div>
+    <div class="tab" data-act="tab" data-arg="battle">试炼</div>
+    <div class="tab" data-act="tab" data-arg="cultivate">养成</div>
+    <div class="tab" data-act="tab" data-arg="quests">敕令</div>
+    <div class="tab" data-act="tab" data-arg="sect">宗门</div>
+    <div class="tab" data-act="tab" data-arg="equip">装备</div>
+    <div class="tab" data-act="tab" data-arg="dungeon">副本</div>
+    <div class="tab" data-act="tab" data-arg="secret">秘境</div>
+    <div class="tab" data-act="tab" data-arg="homestead">家园</div>
+    <div class="tab" data-act="tab" data-arg="store">商店</div>
+    <div class="tab" data-act="tab" data-arg="season">赛季</div>
+    <div class="tab" data-act="tab" data-arg="honor">荣誉</div>
+    <div class="tab" data-act="tab" data-arg="activity">活动日历</div>
+    <div class="tab" data-act="tab" data-arg="tutorial">新手</div>
+    <div class="tab" data-act="tab" data-arg="platform">平台</div>
+    <div class="tab" data-act="tab" data-arg="lbs">出没地图</div>
+    <div class="tab" data-act="tab" data-arg="fuse">妖融合</div>
+    <div class="tab" data-act="tab" data-arg="formation">阵容协同</div>
+    <div class="tab" data-act="tab" data-arg="talent">天赋分配</div>
+  </nav>
+
+  <div class="wrap">
+    <main id="app"></main>
+    <div class="footer-note">
+      本原型为《山海妖志》KMP 工程（shared Kotlin）的<b>忠实可运行镜像</b>：全部数值/判定公式（收妖·祈妖·养成·天赋·对战·羁绊·宗门·装备五路径·炼妖融合·GPS 防作弊）与已通过 Python 等价断言（1502 项）的 Kotlin 真相零漂移，原型侧另以 Node 实跑 121 项断言二次校验。<br/>
+      因本机暂无 JDK/Gradle，故以零依赖 JS 复刻让核心循环真实可玩。数据层 data.js 由 gen_data.py 直接解析 Kotlin 源码生成（无手工转录）。
+    </div>
+  </div>
+
+  <!-- 收妖聚灵环弹层 -->
+  <div id="capture-modal" class="hidden">
+    <div class="cap-box">
+      <div style="font-size:18px;font-weight:bold;color:var(--cinnabar);letter-spacing:2px;">聚 灵 环</div>
+      <div id="cap-mon" style="margin:6px 0;font-size:16px;"></div>
+      <canvas id="ring-canvas" width="260" height="260"></canvas>
+      <div class="cap-info" id="cap-live"></div>
+      <div class="row-flex" style="justify-content:center;margin-top:6px;">
+        <label class="toggle"><input type="checkbox" id="cap-assist"/> 助力符（精度+容错）</label>
+      </div>
+      <div class="row-flex" style="justify-content:center;margin-top:12px;">
+        <button class="btn red" data-act="capture-tap">收 妖</button>
+        <button class="btn ghost" data-act="capture-close">退 出</button>
+      </div>
+      <div id="cap-result" style="margin-top:10px;font-size:14px;min-height:22px;"></div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+  <script>
+  "use strict";
+  var SH = window.ShanHaiGame;
+  var G = window.SH_DATA;
+
+  // ───────── 玩家初始化（三个初始妖） ─────────
+  var player = SH.makePlayer();
+  ["yao_she","jing_saozhou","yao_hu"].forEach(function(id){ player.addStarter(id); });
+
+  // ───────── 全局状态 ─────────
+  var active = "map";
+  var mapState = { node:null, gpsMode:"normal", integrity:null, spawns:[] };
+  var cultSel = null;            // 当前养成选中的 instanceId
+  var battle = null;             // 战斗状态
+  var battleEnv = { weather:"CLEAR", terrain:null }; // 天气/地形（GDD 十九·影响战斗环境乘子）
+  var draft = null;              // 排位 Ban/Pick 选将态（RankBanPickEngine）
+  var dungeonLog = [];         // 副本通关记录
+  var secretResult = null;     // 最近一次秘境进入结果
+  var captureTarget = null;      // 收妖目标 monsterId
+  var gachaResults = [];         // 祈妖结果展示
+  var codexDetail = null;        // 图鉴详情 id
+  var equipSel = null;           // 当前装备详情 instanceId
+  var equipView = "list";        // 装备子视图 list | fuse
+
+  // ───────── 工具 ─────────
+  function $(id){ return document.getElementById(id); }
+  function el(tag, cls, html){ var e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
+  function rarityClass(r){ return "b-"+r.toLowerCase(); }
+  function rarityLabel(r){ return SH.RARITY_LABEL[r]; }
+  function elemColor(e){
+    return ({METAL:"#c8a93e",WOOD:"#4a9b54",EARTH:"#b08a4a",WATER:"#3a7bd5",FIRE:"#d24a3a",WIND:"#6fb0a0",THUNDER:"#9b6bd0"})[e]||"#999";
+  }
+  function elemLabel(e){ return SH.ELEMENT_LABEL[e]; }
+  function catLabel(c){ return SH.CATEGORY_LABEL[c]; }
+  function orb(mon, cls){
+    var c = ({FAN:"#9a8255",LING:"#2f8f5b",XIAN:"#2f6fb2",SHEN:"#9b6bd0"})[mon.rarity]||"#999";
+    var ch = (mon.name||"?").charAt(0);
+    return '<div class="orb '+(cls||"")+'" style="background:'+c+'">'+ch+'</div>';
+  }
+  function monName(id){ var m = SH.monsterById(id); return m ? m.name : id; }
+  function esc(s){ return String(s).replace(/[&<>]/g,function(m){return ({"&":"&amp;","<":"&lt;",">":"&gt;"})[m];}); }
+
+  // ───────── 顶栏刷新 ─────────
+  function updateTopbar(){
+    $("r-lingyu").textContent = player.raw.lingyu;
+    $("r-yaodan").textContent = player.raw.yaodan;
+    $("r-incense").textContent = player.raw.incense;
+    $("r-rep").textContent = player.raw.rep;
+    $("r-fat").textContent = player.raw.fatigue;
+    $("r-rank").textContent = player.rankTierName()+" "+player.raw.rankPoints+"/100";
+    $("r-secret").textContent = player.raw.secretRealmLeft;
+    $("r-codex").textContent = "图鉴 "+player.raw.codex.regionCaught()+"/"+player.raw.codex.regionTotal();
+  }
+
+  // ═══════════ 副本妖境（DungeonEngine + GameState.enterDungeon 接线） ═══════════
+  function renderDungeon(){
+    var p = el("div");
+    var panel = el("div","panel");
+    panel.appendChild(el("h2",null,"副本妖境"));
+    panel.appendChild(el("div","muted","四类副本：山海异闻（剧情）/ 灵脉试炼（日常刷资源）/ 渡劫秘境（成长材料）/ 年节限时（活动）。进入扣香火、每日限次；通关掉落妖丹、渡劫材料、符纸、外观与妖王概率收服（补全图鉴）。"));
+    var grid = el("div","grid c2"); grid.style.marginTop="12px";
+    SH.DungeonEngine.Library.all.forEach(function(d){
+      var entered = player.raw.dungeonEntered[d.id] || 0;
+      var can = SH.DungeonEngine.canEnter(d, player.raw.dungeonEntered, player.raw.incense);
+      var card = el("div","card"); card.style.cursor = can ? "pointer" : "not-allowed";
+      card.setAttribute("data-act", can ? "dungeon-enter" : "noop");
+      card.setAttribute("data-arg", d.id);
+      var bossName = d.bossMonsterId ? (SH.monsterById(d.bossMonsterId) ? SH.monsterById(d.bossMonsterId).name : d.bossMonsterId) : null;
+      var boss = bossName ? (' · 妖王「'+bossName+'」') : "";
+      card.innerHTML = '<div class="name">'+d.name+'</div>'+
+        '<div class="sub">'+d.desc+'</div>'+
+        '<div class="sub">耗香火 '+d.costIncense+' · 今日 '+entered+'/'+d.dailyLimit+boss+'</div>'+
+        '<div class="sub">妖丹 '+d.yaodanRange[0]+'~'+d.yaodanRange[1]+(d.materialRange[1]>0?(' · 材料 '+d.materialRange[0]+'~'+d.materialRange[1]):'')+'</div>'+
+        (can ? '<div class="ok">▶ 进入</div>' : '<div class="warn">不可进入（香火不足或已达限次）</div>');
+      grid.appendChild(card);
+    });
+    panel.appendChild(grid);
+    if(dungeonLog.length){
+      var log = el("div","panel"); log.style.marginTop="12px";
+      log.appendChild(el("h3",null,"通关记录"));
+      dungeonLog.slice().reverse().forEach(function(line){ log.appendChild(el("div","muted",line)); });
+      panel.appendChild(log);
+    }
+    p.appendChild(panel);
+    return p;
+  }
+
+  // ═══════════ 在家秘境（SecretRealmEngine + GameState.enterSecretRealm 接线） ═══════════
+  function renderSecret(){
+    var p = el("div");
+    var panel = el("div","panel");
+    panel.appendChild(el("h2",null,"在家秘境"));
+    panel.appendChild(el("div","muted","不入户外、足不出户即可刷妖。每日免费 "+player.raw.secretRealmLeft+" 次；耗尽后每次消耗香火 "+SH.SecretRealmEngine.INCENSE_COST+"。随机主题（山林/水域/古墓/东海）决定五行偏向，按秘境稀有度权重（凡/灵主导）加权刷妖。"));
+    var card = el("div","card center");
+    var free = player.raw.secretRealmLeft > 0;
+    var canPay = player.raw.incense >= SH.SecretRealmEngine.INCENSE_COST;
+    if(free){
+      card.innerHTML = '<div class="name">入秘境（免费 · 剩 '+player.raw.secretRealmLeft+' 次）</div><div class="sub">点击随机进入一处主题秘境</div><div class="ok">▶ 入秘境</div>';
+      card.setAttribute("data-act","secret-enter"); card.setAttribute("data-arg","");
+    } else if(canPay){
+      card.innerHTML = '<div class="name">入秘境（耗香火 '+SH.SecretRealmEngine.INCENSE_COST+'）</div><div class="sub">免费次数已耗尽</div><div class="ok">▶ 入秘境</div>';
+      card.setAttribute("data-act","secret-enter"); card.setAttribute("data-arg","");
+    } else {
+      card.innerHTML = '<div class="name">无法入秘境</div><div class="sub">免费次数耗尽且香火不足（需 '+SH.SecretRealmEngine.INCENSE_COST+'）</div><div class="warn">香火不足</div>';
+      card.setAttribute("data-act","noop");
+    }
+    panel.appendChild(card);
+    if(secretResult){
+      var r = secretResult;
+      var THEME = {SHANLIN:"山林",SHUIYU:"水域",GUMU:"古墓",DONGHAI:"东海"};
+      var themeName = THEME[r.theme] || r.theme;
+      var res = el("div","panel"); res.style.marginTop="12px";
+      res.appendChild(el("h3",null,"本次秘境 · "+themeName+"（"+r.element+"行）"));
+      var sp = el("div","grid c3"); sp.style.marginTop="8px";
+      r.spawns.forEach(function(id){
+        var m = SH.monsterById(id);
+        var orb = el("div","orb", (m?m.name:"?").charAt(0));
+        sp.appendChild(orb);
+      });
+      res.appendChild(sp);
+      res.appendChild(el("div","muted","秘境所收妖不计入地域图鉴（仅记秘境收录）。"));
+      panel.appendChild(res);
+    }
+    p.appendChild(panel);
+    return p;
+  }
+
+  // ───────── 渲染分发 ─────────
+  // ───────── 家园洞府（HomesteadEngine + GameState 收取/升级 接线） ─────────
+  function renderHomestead(){
+    var p = el("div");
+    var panel = el("div","panel");
+    panel.appendChild(el("h2",null,"家园洞府"));
+    var lv = player.getHomesteadLevel();
+    var incR = player.homesteadIncenseRate();
+    var pilR = player.homesteadPillRate();
+    var atk = player.homesteadAttackBonus();
+    panel.appendChild(el("div","muted","洞府随时间产出香火与妖丹（离线封顶 12 时）。阵法风水每级 +10% 香火时产、+0.1 妖丹时产、+2% 全局攻击增益。当前阵法 Lv"+lv+"：香火 "+incR.toFixed(1)+"/时、妖丹 "+pilR.toFixed(1)+"/时、攻击增益 +"+(atk*100).toFixed(0)+"%。"));
+    var pending = player.homesteadPending(Date.now());
+    var card = el("div","card center");
+    card.innerHTML = '<div class="name">收取洞府产出（阵法 Lv'+lv+'）</div>'+
+      '<div class="sub">待收：香火 '+pending.incense+' / 妖丹 '+pending.pills+(pending.capped?'（已达 12h 封顶）':'')+'</div>'+
+      '<div class="ok">▶ 收取</div>';
+    card.setAttribute("data-act","homestead-collect"); card.setAttribute("data-arg","");
+    panel.appendChild(card);
+    var cost = SH.HomesteadEngine.upgradeCost(lv);
+    var up = el("div","card center");
+    if(player.canUpgradeHomestead()){
+      up.innerHTML = '<div class="name">修缮阵法 → Lv'+(lv+1)+'</div><div class="sub">耗妖丹 '+cost+'（当前妖丹 '+player.raw.yaodan+'）</div><div class="ok">▶ 升级</div>';
+      up.setAttribute("data-act","homestead-upgrade"); up.setAttribute("data-arg","");
+    } else {
+      up.innerHTML = '<div class="name">修缮阵法 → Lv'+(lv+1)+'</div><div class="sub">妖丹不足（需 '+cost+'，现有 '+player.raw.yaodan+'）</div><div class="warn">妖丹不足</div>';
+      up.setAttribute("data-act","noop");
+    }
+    panel.appendChild(up);
+    // 每日重置（演示）：对应 DailyResetEngine / GameState.maybeResetDaily
+    var resetCard = el("div","card center");
+    var lastReset = player.raw.lastDailyReset || "（从未）";
+    resetCard.innerHTML = '<div class="name">每日重置 · 跨天静默</div>'+
+      '<div class="sub">上次重置日：'+lastReset+'　·　含 7 项系统（任务/秘境/副本/商店/据点/信誉/疲劳）</div>'+
+      '<div class="ok">▶ 模拟跨天重置（演示）</div>';
+    resetCard.setAttribute("data-act","daily-reset"); resetCard.setAttribute("data-arg","");
+    panel.appendChild(resetCard);
+    p.appendChild(panel);
+    return p;
+  }
+
+  function render(){
+    updateTopbar();
+    var app = $("app");
+    app.innerHTML = "";
+    var fn = ({map:renderMap, codex:renderCodex, gacha:renderGacha, battle:renderBattle,
+               cultivate:renderCultivate, quests:renderQuests, sect:renderSect, equip:renderEquip, dungeon:renderDungeon, secret:renderSecret, homestead:renderHomestead, store:renderStore, season:renderSeason, honor:renderHonor, activity:renderActivity, tutorial:renderTutorial, platform:renderPlatform, lbs:renderLbs, fuse:renderFuse, formation:renderFormation, talent:renderTalent})[active];
+    if(fn) app.appendChild(fn());
+    // 标签高亮
+    var tabs = document.querySelectorAll(".tab");
+    tabs.forEach(function(t){ t.classList.toggle("active", t.getAttribute("data-arg")===active); });
+  }
+
+  // ═══════════ 12. 商店（经济与变现：引妖香回补香火） ═══════════
+  function renderStore(){
+    var p = el("div");
+    var panel = el("div","panel");
+    panel.appendChild(el("h2",null,"商店"));
+    panel.appendChild(el("div","muted","经济与变现（GDD 十四）：付费只卖「机会/外观」，不卖成品战力。本切片落地「引妖香」——耗灵玉回补香火，日购上限防通胀。"));
+    var today = new Date().toISOString().slice(0,10);
+    var bought = (player.raw.shopDay === today) ? player.raw.shopIncenseBought : 0;
+    var left = SH.ShopEngine.INCENSE_DAILY_BUY_CAP - bought;
+    var can = SH.ShopEngine.canBuyIncense({incenseBoughtToday:player.raw.shopIncenseBought, lastBuyDay:player.raw.shopDay}, today, player.raw.lingyu);
+    // 引妖香卡片
+    var card = el("div","card");
+    card.appendChild(el("div","name","引妖香 ×1"));
+    card.appendChild(el("div","desc","耗灵玉 "+SH.ShopEngine.INCENSE_REFILL_COST_LINGYU+" → 回补香火 "+SH.ShopEngine.INCENSE_REFILL_AMOUNT));
+    card.appendChild(el("div","sub","今日可购："+left+" / "+SH.ShopEngine.INCENSE_DAILY_BUY_CAP+"（"+(can?"可购买":"不可购买")+"）"));
+    var btn = el("button","btn "+(can?"red":"ghost"),"购 买");
+    btn.setAttribute("data-act","shop-buy");
+    card.appendChild(btn);
+    panel.appendChild(card);
+    p.appendChild(panel);
+    return p;
+  }
+
+  // ═══════════ 13. 赛季通行证（长线留存：90 天双轨·免费/付费轨道） ═══════════
+  function renderSeason(){
+    var p = el("div");
+    var panel = el("div","panel");
+    panel.appendChild(el("h2",null,"赛季通行证"));
+    panel.appendChild(el("div","muted","GDD 十九·长线留存：90 天一个赛季，日常活动累计赛季经验解锁档位，双轨（免费/付费）奖励。本切片落地 SeasonEngine 纯函数 + GameState 赛季接线。"));
+    var now = Date.now();
+    player.ensureSeasonStart(now);
+    var day = player.seasonDayNow(now);
+    var remain = player.seasonDaysRemaining(now);
+    var tier = player.currentSeasonTier();
+    var xp = player.raw.seasonXp;
+    var inProg = player.isSeasonInProgress(now);
+    // 概览卡片
+    var card = el("div","card");
+    card.appendChild(el("div","name","第 "+player.raw.seasonIndex+" 赛季"+(inProg?"":"（已结束）")));
+    card.appendChild(el("div","desc","第 "+day+" 天 · 剩余 "+remain+" 天 · 已解锁档位 "+tier+" / "+SH.SeasonEngine.TIERS));
+    card.appendChild(el("div","sub","赛季经验 "+xp+" · 下档阈值 "+SH.SeasonEngine.xpForTier(tier+1)));
+    card.appendChild(el("div","sub", player.raw.hasSeasonPass ? "通行证：已激活（可领付费档）" : "通行证：未购买"));
+    var bp = el("button","btn "+(player.raw.hasSeasonPass?"ghost":"red"),"购买通行证（耗灵玉 300）");
+    bp.setAttribute("data-act","season-buy-pass"); bp.style.marginRight="8px";
+    var cl = el("button","btn red","一键领取已解锁档位");
+    cl.setAttribute("data-act","season-claim-all"); cl.style.marginRight="8px";
+    var xp2 = el("button","btn ghost sm","演练：收妖 +"+SH.SeasonEngine.XP_CATCH+" 赛季经验");
+    xp2.setAttribute("data-act","season-addxp");
+    card.appendChild(bp); card.appendChild(cl); card.appendChild(xp2);
+    panel.appendChild(card);
+    // 档位奖励预览（前 12 档）
+    var list = el("div","card");
+    list.appendChild(el("div","name","档位奖励预览（前 12 档）"));
+    var rows = "";
+    for (var t=1; t<=12; t++){
+      var fr = SH.SeasonEngine.freeReward(t), pr = SH.SeasonEngine.paidReward(t);
+      rows += "第"+t+"档：免费 香火+"+fr.incense+"/妖丹+"+fr.yaodan+" ｜ 付费 灵玉+"+pr.lingyu+"/妖丹+"+pr.yaodan+(t%10===0?"（里程碑×厚）":"")+"\n";
+    }
+    var pre = el("pre","desc", rows); pre.style.fontSize="12px"; pre.style.lineHeight="1.5";
+    list.appendChild(pre);
+    list.appendChild(el("div","sub","赛季经验来源：收妖 +"+SH.SeasonEngine.XP_CATCH+" · 对战 +"+SH.SeasonEngine.XP_BATTLE+" · 副本 +"+SH.SeasonEngine.XP_DUNGEON+" · 签到 +"+SH.SeasonEngine.XP_SIGNIN));
+    panel.appendChild(list);
+    // ── 运营活动（ActivityEngine）──
+    var acts = player.currentActivities();
+    var actCard = el("div","card");
+    actCard.appendChild(el("div","name","运营活动（当前生效 "+acts.length+" 个）"));
+    if (acts.length === 0) {
+      actCard.appendChild(el("div","desc","当前无生效活动。活动按日期区间自动触发（年节/节气/运营限时），叠加收妖/经验/收益全局乘子。"));
+    } else {
+      var bonuses = player.activityBonuses();
+      actCard.appendChild(el("div","sub","乘子聚合：收妖 ×"+bonuses.captureMul+" · 经验 ×"+bonuses.expMul+" · 收益 ×"+bonuses.incomeMul));
+      acts.forEach(function(a){
+        actCard.appendChild(el("div","desc","📅 "+SH.ActivityEngine.KIND_LABEL[a.kind]+" · "+a.name+"（"+a.start+" ~ "+a.end+"）"));
+      });
+    }
+    actCard.appendChild(el("div","sub","活动库共 "+SH.ActivityEngine.ACTIVITIES.length+" 个，示例：中秋 9/25-9/27 / 国庆 10/1-10/7"));
+    panel.appendChild(actCard);
+    p.appendChild(panel);
+    return p;
+  }
+
+  // ═══════════ 荣誉/勋章/称号（HonorEngine + GameState，最小化 UI 展示） ═══════════
+  function renderHonor(){
+    var p = el("div");
+    var panel = el("div","panel");
+    panel.appendChild(el("div","muted","GDD 二十·展示型荣誉：成就达成数驱动勋章阶梯（青铜→钻石），综合进度解锁称号，玩家可装备其一作为展示。"));
+
+    // ═════════ 信誉分层仪表（ReputationEngine）═════════
+    var repCard = el("div","card");
+    repCard.style.textAlign = "left";
+    var rep = player.raw.rep;
+    var tier = SH.ReputationEngine.tier(rep);
+    var tierLabel = SH.ReputationEngine.tierLabel(rep);
+    var tierColor = tier === "EXCELLENT" ? "var(--jade)" : tier === "OBSERVED" ? "var(--gold)" : "var(--cinnabar)";
+
+    repCard.appendChild(el("div","name","信誉分层仪表"));
+
+    // 分数条 + 阈值线
+    var barWrap = el("div");
+    barWrap.style.position = "relative";
+    barWrap.style.height = "22px";
+    barWrap.style.background = "var(--panel)";
+    barWrap.style.border = "1px solid var(--line)";
+    barWrap.style.borderRadius = "11px";
+    barWrap.style.overflow = "hidden";
+    var barFill = el("div");
+    barFill.style.height = "100%";
+    barFill.style.width = rep + "%";
+    barFill.style.background = "linear-gradient(90deg, "+tierColor+"cc, "+tierColor+")";
+    barFill.style.borderRadius = "11px";
+    barFill.style.transition = "width .2s";
+    barWrap.appendChild(barFill);
+    // 阈值刻度线
+    [60, 80].forEach(function(thr){
+      var mark = el("div");
+      mark.style.position = "absolute";
+      mark.style.top = "0";
+      mark.style.bottom = "0";
+      mark.style.left = thr + "%";
+      mark.style.width = "2px";
+      mark.style.background = "var(--cinnabar)";
+      mark.style.opacity = ".5";
+      mark.title = "阈值 "+thr;
+      barWrap.appendChild(mark);
+    });
+    repCard.appendChild(barWrap);
+
+    // 分数 + badge 行
+    var scoreRow = el("div","row-flex");
+    scoreRow.style.justifyContent = "space-between";
+    scoreRow.style.alignItems = "center";
+    scoreRow.style.marginTop = "6px";
+    scoreRow.appendChild(el("div",null,"<b style='font-size:16px;'>"+rep+"</b> / 100"));
+    var badge = el("span","pill", tierLabel + "（"+tier+"）");
+    badge.style.background = tierColor + "22";
+    badge.style.borderColor = tierColor;
+    badge.style.color = tierColor;
+    scoreRow.appendChild(badge);
+    repCard.appendChild(scoreRow);
+
+    // 三层说明
+    var tierInfo = el("div","muted");
+    tierInfo.style.marginTop = "4px";
+    tierInfo.innerHTML = "优秀 ≥80 · 观察 60-79（<span style='color:var(--cinnabar)'>罕见怪 ×0.7</span>）· 受限 <60（<span style='color:var(--cinnabar)'>禁止 LBS 探索</span>）";
+    repCard.appendChild(tierInfo);
+
+    // 效果提示（仅观察/受限层显示）
+    if (tier === "OBSERVED") {
+      var obsHint = el("div");
+      obsHint.style.marginTop = "4px";
+      obsHint.style.padding = "4px 8px";
+      obsHint.style.background = "var(--gold)22";
+      obsHint.style.border = "1px solid var(--gold)";
+      obsHint.style.borderRadius = "6px";
+      obsHint.style.fontSize = "12px";
+      obsHint.innerHTML = "⚠️ 当前处于<b>观察层</b>，罕见（仙/神）妖刷怪倍率 ×0.7（-30%）。";
+      repCard.appendChild(obsHint);
+    } else if (tier === "RESTRICTED") {
+      var resHint = el("div");
+      resHint.style.marginTop = "4px";
+      resHint.style.padding = "4px 8px";
+      resHint.style.background = "var(--cinnabar)22";
+      resHint.style.border = "1px solid var(--cinnabar)";
+      resHint.style.borderRadius = "6px";
+      resHint.style.fontSize = "12px";
+      resHint.innerHTML = "🚫 当前处于<b>受限层</b>，禁止户外 LBS 探索（仅可入秘境）。";
+      repCard.appendChild(resHint);
+    }
+
+    // 模拟按钮行
+    var btnRow = el("div","row-flex");
+    btnRow.style.gap = "6px";
+    btnRow.style.flexWrap = "wrap";
+    btnRow.style.marginTop = "8px";
+    var kinds = [
+      { k: "TELEPORT", label: "瞬移 -18", cls: "btn red sm" },
+      { k: "SPEED",    label: "超速 -12", cls: "btn sm" },
+      { k: "UNKNOWN",  label: "未知 -10", cls: "btn sm" },
+    ];
+    kinds.forEach(function(kind){
+      var b = el("button", kind.cls, kind.label);
+      b.setAttribute("data-act","rep-penalty");
+      b.setAttribute("data-arg", kind.k);
+      btnRow.appendChild(b);
+    });
+    var rec = el("button","btn ghost sm","每日恢复 +1");
+    rec.setAttribute("data-act","rep-recover");
+    btnRow.appendChild(rec);
+    repCard.appendChild(btnRow);
+
+    panel.appendChild(repCard);
+
+    // 荣誉画像
+    var hp = player.honorProfile();
+    var achievementTotal = player.achievementTotal();
+    var profile = el("div","card");
+    profile.appendChild(el("div","name","荣誉画像"));
+    profile.appendChild(el("div","desc","达成成就 "+hp.achievementCount+" / "+achievementTotal+" · 图鉴完成度 "+hp.codexRatio+"% · 渡劫 "+hp.tribulationTotal+" 次 · 段位 "+player.rankTierName()));
+    var curTitle = player.displayTitle() || "（无）";
+    profile.appendChild(el("div","sub","当前展示称号："+curTitle));
+    panel.appendChild(profile);
+    // 已解锁勋章
+    var medals = player.medals();
+    var mCard = el("div","card");
+    mCard.appendChild(el("div","name","勋章（已解锁 "+medals.length+" / 4）"));
+    if (medals.length === 0) {
+      mCard.appendChild(el("div","desc","尚未解锁任何勋章。达成 1 项成就解锁「青铜妖士」。"));
+    } else {
+      medals.forEach(function(m){
+        mCard.appendChild(el("div","desc","🏅 "+m.name+" — "+m.desc));
+      });
+    }
+    panel.appendChild(mCard);
+    // 已解锁称号 + 装备
+    var titles = player.titles();
+    var tCard = el("div","card");
+    tCard.appendChild(el("div","name","称号（已解锁 "+titles.length+" / 12）"));
+    if (titles.length === 0) {
+      tCard.appendChild(el("div","desc","尚未解锁任何称号。达成 1 项成就解锁「收妖大师」。"));
+    } else {
+      titles.forEach(function(t){
+        var btn = el("button","btn sm"+(player.raw.equippedTitleId===t.id?" ghost":""), player.raw.equippedTitleId===t.id?"已装备":"装备");
+        btn.setAttribute("data-act","honor-equip"); btn.setAttribute("data-arg",t.id);
+        var row = el("div","desc","📜 "+t.name+" — "+t.desc+" ");
+        row.style.display="flex"; row.style.alignItems="center"; row.style.gap="8px";
+        row.appendChild(btn);
+        tCard.appendChild(row);
+      });
+      // 清空称号
+      var clr = el("button","btn ghost sm","清空称号");
+      clr.setAttribute("data-act","honor-equip"); clr.setAttribute("data-arg","");
+      tCard.appendChild(clr);
+    }
+    panel.appendChild(tCard);
+    p.appendChild(panel);
+    return p;
+  }
+  // honor-equip / rep-penalty / rep-recover 事件（合并在一个监听器）
+  document.addEventListener("click", function(ev){
+    var t = ev.target.closest && ev.target.closest("[data-act]");
+    if (!t) return;
+    var act = t.getAttribute("data-act");
+    var arg = t.getAttribute("data-arg");
+    if (act === "honor-equip") {
+      var ok = player.equipTitle(arg);
+      alert(ok ? (arg?"装备称号成功！":"称号已清空") : "称号未解锁，无法装备");
+      render();
+    } else if (act === "rep-penalty") {
+      player.raw.rep = SH.ReputationEngine.applyPenalty(player.raw.rep, arg);
+      render();
+    } else if (act === "rep-recover") {
+      player.raw.rep = SH.ReputationEngine.dailyRecover(player.raw.rep);
+      render();
+    }
+  });
+
+  // ═══════════ 活动日历（ActivityEngine — 运营活动·年节限时） ═══════════
+  function renderActivity(){
+    var p = el("div");
+    var panel = el("div","panel");
+    panel.appendChild(el("h2",null,"活动日历"));
+    panel.appendChild(el("div","muted","运营活动（GDD 二十·活动运营）：按日期区间触发，乘性叠加收妖/经验/收益三类乘子。活动为运营配置，不进存档。"));
+
+    // 日期选择器
+    var today = player.raw.lastDailyReset || new Date().toISOString().slice(0,10);
+    var wrap = el("div","row-flex");
+    wrap.style.marginTop = "10px";
+    wrap.style.gap = "10px";
+    wrap.appendChild(el("label",null,"模拟日期："));
+    var pick = el("input");
+    pick.type = "date";
+    pick.value = today;
+    pick.min = "2026-01-01";
+    pick.max = "2026-12-31";
+    pick.onchange = function(){ player.raw.lastDailyReset = pick.value; render(); };
+    wrap.appendChild(pick);
+    panel.appendChild(wrap);
+
+    // 聚合乘子展示
+    var actList = SH.ActivityEngine.active(today);
+    var bons = SH.ActivityEngine.aggregate(actList);
+    var bonBox = el("div","panel");
+    bonBox.style.marginTop = "12px";
+    bonBox.style.background = actList.length ? "var(--panel2)" : "var(--panel)";
+    bonBox.style.border = actList.length ? "1px solid var(--jade)" : "1px solid var(--line)";
+    bonBox.appendChild(el("div",null,"<b>当日乘子聚合（"+actList.length+" 个生效活动）</b>"));
+    var bonRow = el("div","row-flex");
+    bonRow.style.gap = "16px";
+    bonRow.style.marginTop = "6px";
+    bonRow.appendChild(el("span","pill","收妖 ×"+bons.captureMul));
+    bonRow.appendChild(el("span","pill","经验 ×"+bons.expMul));
+    bonRow.appendChild(el("span","pill","收益 ×"+bons.incomeMul));
+    bonBox.appendChild(bonRow);
+    panel.appendChild(bonBox);
+
+    // 活动列表卡片
+    var listTitle = el("div");
+    listTitle.style.marginTop = "16px";
+    listTitle.innerHTML = "<b>全部活动（共 "+SH.ActivityEngine.ACTIVITIES.length+" 条）</b>";
+    panel.appendChild(listTitle);
+
+    var cardWrap = el("div");
+    cardWrap.style.display = "grid";
+    cardWrap.style.gridTemplateColumns = "repeat(auto-fill, minmax(260px, 1fr))";
+    cardWrap.style.gap = "10px";
+    cardWrap.style.marginTop = "8px";
+
+    SH.ActivityEngine.ACTIVITIES.forEach(function(a){
+      var end = a.end;
+      var active = SH.ActivityEngine.isActive(a, today);
+      var statusText, statusCls;
+      if (active) { statusText = "进行中"; statusCls = "pill"; }
+      else if (end < today) { statusText = "已结束"; statusCls = "pill"; }
+      else { statusText = "即将到来"; statusCls = "pill"; }
+
+      var card = el("div");
+      card.className = "card";
+      card.style.textAlign = "left";
+      card.style.cursor = "default";
+      if (active) { card.style.borderColor = "var(--cinnabar)"; card.style.boxShadow = "0 0 0 2px rgba(178,58,46,.15)"; }
+
+      var headRow = el("div","row-flex");
+      headRow.style.justifyContent = "space-between";
+      headRow.style.alignItems = "center";
+      headRow.style.marginBottom = "4px";
+      headRow.appendChild(el("span","pill", SH.ActivityEngine.KIND_LABEL[a.kind] || a.kind));
+      headRow.appendChild(el("span","pill", statusText));
+      card.appendChild(headRow);
+      card.appendChild(el("div",null,"<b style='font-size:15px;'>"+a.name+"</b>"));
+      card.appendChild(el("div","muted","📅 "+a.start+" → "+a.end));
+
+      // 非默认乘子
+      var mulRow = el("div","row-flex");
+      mulRow.style.gap = "6px";
+      mulRow.style.marginTop = "4px";
+      if (a.captureMul !== undefined && a.captureMul !== 1.0) mulRow.appendChild(el("span","pill","收妖 +"+((a.captureMul-1)*100)+"%"));
+      if (a.expMul !== undefined && a.expMul !== 1.0) mulRow.appendChild(el("span","pill","经验 +"+((a.expMul-1)*100)+"%"));
+      if (a.incomeMul !== undefined && a.incomeMul !== 1.0) mulRow.appendChild(el("span","pill","收益 +"+((a.incomeMul-1)*100)+"%"));
+      card.appendChild(mulRow);
+
+      cardWrap.appendChild(card);
+    });
+    panel.appendChild(cardWrap);
+
+    p.appendChild(panel);
+    return p;
+  }
+
+  // ═══════════ 16. 新手引导 + 7 日留存（TutorialEngine + 签到） ═══════════
+  function renderTutorial(){
+    var p = el("div");
+    var panel = el("div","panel");
+    // 引导进度
+    var active = player.tutorialActive();
+    panel.appendChild(el("div","muted","GDD 十八·5 步引导 + 7 日留存功能解锁 + 签到递增奖励（封顶 70）。前 3 步强制。"));
+    var progressRow = el("div","name");
+    progressRow.textContent = "引导进度：已完成 " + player.raw.tutorialStep + " / " + SH.TutorialEngine.LAST_ORDER;
+    if(active) progressRow.textContent += "（进行中）";
+    else progressRow.textContent += "（已完成" + (player.raw.tutorialSkipped?" / 已跳过":"") + "）";
+    panel.appendChild(progressRow);
+    // 当前步骤
+    var cur = player.currentTutorialStep();
+    if(cur){
+      var curCard = el("div","card");
+      curCard.appendChild(el("div","name","当前步骤 " + cur.order + " / " + SH.TutorialEngine.LAST_ORDER + "：" + cur.title));
+      curCard.appendChild(el("div","sub","强制步骤：" + (cur.order <= 3 ? "✅ 是（必须完成才能继续）" : "否")));
+      panel.appendChild(curCard);
+    }
+    // 每步完成按钮
+    var stepList = el("div");
+    SH.TutorialEngine.STEPS.forEach(function(s){
+      var done = player.raw.tutorialStep >= s.order;
+      var row = el("div","desc");
+      row.textContent = (done ? "✅" : (active?"🔲":"◻️")) + " 步骤" + s.order + "：" + s.title + (s.order<=3?" 【强制】":"");
+      if(active && !done){
+        var btn = el("button");
+        btn.textContent = "标记完成";
+        btn.setAttribute("data-act","tutorial-step");
+        btn.setAttribute("data-arg", s.order);
+        row.appendChild(btn);
+      }
+      stepList.appendChild(row);
+    });
+    panel.appendChild(stepList);
+    // 跳过按钮（仅当引导进行中）
+    if(active){
+      var skipBtn = el("button");
+      skipBtn.textContent = "跳过全部引导";
+      skipBtn.setAttribute("data-act","tutorial-skip");
+      panel.appendChild(skipBtn);
+    }
+    // ── 7 日留存：功能解锁 ──
+    var dayCard = el("div","card");
+    dayCard.appendChild(el("div","name","7 日留存进度：第 " + player.raw.signInDay + " 天"));
+    var features = player.realmFeatures();
+    dayCard.appendChild(el("div","sub","已解锁功能 " + features.length + " / 4（引导未完成时全部开放）"));
+    var featList = el("div");
+    SH.TutorialEngine.REALM_FEATURES.forEach(function(f){
+      var unlocked = features.indexOf(f) >= 0;
+      featList.appendChild(el("div","desc", (unlocked?"🔓":"🔒") + " 第" + f.unlockDay + "天解锁：" + f.name));
+    });
+    dayCard.appendChild(featList);
+    panel.appendChild(dayCard);
+    // ── 签到按钮 ──
+    var signCard = el("div","card");
+    var reward = SH.TutorialEngine.signInReward(player.raw.signInDay + 1);
+    signCard.appendChild(el("div","name","签到点"));
+    signCard.appendChild(el("div","sub","下次签到奖励：香火 +" + reward + "（封顶 70）"));
+    var signBtn = el("button");
+    signBtn.textContent = "点击签到（第 " + (player.raw.signInDay+1) + " 天）";
+    signBtn.setAttribute("data-act","signin-do");
+    signCard.appendChild(signBtn);
+    panel.appendChild(signCard);
+    p.appendChild(panel);
+    return p;
+  }
+
+  // ═══════════ 17. 平台壳状态（MockPlatform + 选型快照 + D11） ═══════════
+  function renderPlatform(){
+    var p = el("div");
+    var panel = el("div","panel");
+    var d = SH.MockPlatform.decision;
+    panel.appendChild(el("div","muted","T04 平台壳选型决策（D11 · 2026-10-01）。原型用 MockPlatform 胶水层，shared 纯函数契约已全部就绪，原生壳只写胶水层。"));
+    // 选型快照
+    panel.appendChild(el("div","name","选型决策快照"));
+    panel.appendChild(el("div","desc","🗺 地图 SDK：" + d.mapSdk));
+    panel.appendChild(el("div","desc","🎥 AR 收妖：" + d.arCapture));
+    panel.appendChild(el("div","desc","☁️ 云同步：" + d.cloudSync));
+    panel.appendChild(el("div","desc","⏰ 每日重置：" + d.dailyReset));
+    panel.appendChild(el("div","desc","🤝 社交服务器：" + d.socialServer));
+    // 各壳 Mock 状态
+    panel.appendChild(el("div","name","各壳 Mock 状态"));
+    var m = SH.MockPlatform;
+    panel.appendChild(el("div","desc","🗺 MapSdkAdapter：available=" + m.mapSdk.available + " · POI 节点数=" + m.mapSdk.buildPois().length));
+    panel.appendChild(el("div","desc","🎥 ARCaptureController：status=" + m.arCapture.status + "（原型 UI 自动切国风卷轴背景）"));
+    panel.appendChild(el("div","desc","☁️ CloudSyncEngine：backendType=" + m.cloudSync.backendType + "（shared merge/checksum 已纯函数化）"));
+    panel.appendChild(el("div","desc","⏰ DailyResetScheduler：available=" + m.dailyResetScheduler.available + " · registered=" + m.dailyResetScheduler.registered));
+    panel.appendChild(el("div","sub","选型后原生壳需写胶水层（iosApp/ androidApp 各一份），shared 逻辑零改动。"));
+    p.appendChild(panel);
+  return p;
+}
+
+// ═══════════ 出没地图（OpenStreetMap iframe 展示据点真实地理坐标） ═══════════
+var lbsState = { node: null };
+
+function renderLbs(){
+  var p = el("div");
+  var panel = el("div","panel");
+  panel.appendChild(el("h2",null,"出没地图"));
+  panel.appendChild(el("div","muted","四方据点巡妖实景。点击下方任意图卡，查看该据点在 OpenStreetMap 上的真实位置。坐标由 LocationEngine 统一定义，原型与 Kotlin shared 零漂移。"));
+
+  // 据点数据（从 LocationEngine 取真实坐标）
+  var icons = {"城隍桥":"🏯","古庙":"⛩️","老槐树":"🌳","东海之滨":"🌊"};
+  var coords = SH.LocationEngine.nodeCoordinates();
+  // 默认选中第一个
+  if(!lbsState.node) lbsState.node = coords[0] && coords[0].name;
+
+  // 卡片网格
+  var grid = el("div","lbs-grid");
+  coords.forEach(function(c){
+    var card = el("div","lbs-node");
+    if(c.name === lbsState.node) card.classList.add("active");
+    card.setAttribute("data-act","lbs-select");
+    card.setAttribute("data-arg",c.name);
+    card.innerHTML = '<div class="lbs-icon">' + (icons[c.name]||"⛰️") + '</div>' +
+                     '<div class="lbs-name">' + c.name + '</div>' +
+                     '<div class="lbs-coord">' + c.lat.toFixed(2) + ', ' + c.lng.toFixed(2) + '</div>';
+    grid.appendChild(card);
+  });
+  panel.appendChild(grid);
+
+  // OSM iframe 容器
+  if(lbsState.node){
+    var sel = coords.filter(function(c){return c.name===lbsState.node;})[0];
+    panel.appendChild(buildOsmFrame(sel));
+  }
+
+  p.appendChild(panel);
+  return p;
+}
+
+function selectLbsNode(name){
+  lbsState.node = name;
+  render();
+}
+
+function buildOsmFrame(c){
+  // OSM embed: bbox=lng0,lat0,lng1,lat1；marker=lat,lng
+  var span = 0.04;
+  var bbox = (c.lng-span).toFixed(4) + ',' + (c.lat-span).toFixed(4) + ',' + (c.lng+span).toFixed(4) + ',' + (c.lat+span).toFixed(4);
+  var url  = 'https://www.openstreetmap.org/export/embed.html?bbox=' + bbox + '&layer=mapnik&marker=' + c.lat.toFixed(4) + ',' + c.lng.toFixed(4);
+  var wrap = el("div","lbs-frame-wrap");
+  var head = el("div","lbs-frame-header");
+  head.innerHTML = '<span>📍 ' + c.name + '　<b>' + c.lat.toFixed(4) + ', ' + c.lng.toFixed(4) + '</b></span>' +
+                  '<span class="lbs-close" title="查看更多">⤢</span>';
+  wrap.appendChild(head);
+  var iframe = document.createElement("iframe");
+  iframe.src = url;
+  iframe.loading = "lazy";
+  iframe.setAttribute("referrerpolicy","no-referrer-when-downgrade");
+  wrap.appendChild(iframe);
+  return wrap;
+}
+
+// ═══════════ 妖融合（FusionEngine 可视化） ═══════════
+var fuseState = { aId: null, bId: null, demoInstances: [] };
+
+function renderFuse(){
+  var p = el("div");
+  var panel = el("div","panel");
+  panel.appendChild(el("h2",null,"妖融合"));
+  panel.appendChild(el("div","muted","两只妖投入丹炉，或得新妖、或取稀者。消耗妖丹 "+SH.FusionEngine.FUSE_COST_YAODAN+"，等级 +"+SH.FusionEngine.LEVEL_BONUS+"。"));
+
+  // 初始化 demo 妖实例（MONSTERS 前 8 只）
+  if(fuseState.demoInstances.length === 0){
+    var defs = Object.keys(SH.MONSTERS).map(function(k){ return SH.MONSTERS[k]; });
+    fuseState.demoInstances = defs.slice(0, 8).map(function(def, i){
+      return { instanceId: "demo_"+i, defId: def.id, level: Math.max(5, (def.maxLevel||30) - Math.floor(Math.random()*8)), breakthrough: 0 };
+    });
+  }
+
+  // 已知配方图鉴
+  var recipes = el("div","panel");
+  recipes.style.marginTop = "12px";
+  recipes.appendChild(el("h2",null,"已知配方"));
+  var recipeGrid = el("div","grid c2");
+  var recipeKeys = Object.keys(SH.FusionEngine.RECIPES);
+  if(recipeKeys.length === 0){
+    recipeGrid.innerHTML = '<div class="card muted">暂无公开配方。<br>提示：无配方时融合会取稀有度更高的那只作为结果。</div>';
+  } else {
+    recipeKeys.forEach(function(key){
+      var parts = key.split("|");
+      var targetId = SH.FusionEngine.RECIPES[key];
+      var a = SH.monsterById(parts[0]);
+      var b = SH.monsterById(parts[1]);
+      var t = SH.monsterById(targetId);
+      var card = el("div","card fuse-recipe-card");
+      card.innerHTML = '<div style="display:flex;align-items:center;gap:8px;">'+orb(a,'')+' <span style="color:var(--cinnabar);font-weight:bold;">⚗️</span> '+orb(b,'')+' <span style="color:var(--jade);font-weight:bold;">→</span> <span class="fuse-new">'+orb(t,'')+'</span></div>'+
+        '<div class="name" style="margin-top:4px;">'+a.name+' + '+b.name+' → '+t.name+'</div>'+
+        '<div class="sub"><span class="badge '+rarityClass(t.rarity)+'">'+rarityLabel(t.rarity)+'</span> <span class="e-badge" style="background:'+elemColor(t.element)+'">'+elemLabel(t.element)+'</span></div>';
+      recipeGrid.appendChild(card);
+    });
+  }
+  recipes.appendChild(recipeGrid);
+  panel.appendChild(recipes);
+
+  // 融合丹炉
+  var furnace = el("div","panel");
+  furnace.style.marginTop = "12px";
+  furnace.appendChild(el("h2",null,"融合丹炉"));
+
+  // 选妖 A
+  var colA = el("div");
+  colA.appendChild(el("div","muted","选妖 A："));
+  var gridA = el("div","grid c4");
+  fuseState.demoInstances.forEach(function(inst){
+    var def = SH.monsterById(inst.defId);
+    var cls = "card fuse-card" + (fuseState.aId === inst.instanceId ? " active" : "");
+    var c = el("div",cls);
+    c.setAttribute("data-act","fuse-select-a");
+    c.setAttribute("data-arg",inst.instanceId);
+    c.innerHTML = orb(def,'') + '<div class="name">'+def.name+'</div>'+
+      '<div class="sub">Lv.'+inst.level+' <span class="badge '+rarityClass(def.rarity)+'">'+rarityLabel(def.rarity)+'</span></div>';
+    gridA.appendChild(c);
+  });
+  colA.appendChild(gridA);
+  furnace.appendChild(colA);
+
+  // 选妖 B
+  var colB = el("div");
+  colB.style.marginTop = "10px";
+  colB.appendChild(el("div","muted","选妖 B："));
+  var gridB = el("div","grid c4");
+  fuseState.demoInstances.forEach(function(inst){
+    if(inst.instanceId === fuseState.aId) return;
+    var def = SH.monsterById(inst.defId);
+    var cls = "card fuse-card" + (fuseState.bId === inst.instanceId ? " active" : "");
+    var c = el("div",cls);
+    c.setAttribute("data-act","fuse-select-b");
+    c.setAttribute("data-arg",inst.instanceId);
+    c.innerHTML = orb(def,'') + '<div class="name">'+def.name+'</div>'+
+      '<div class="sub">Lv.'+inst.level+' <span class="badge '+rarityClass(def.rarity)+'">'+rarityLabel(def.rarity)+'</span></div>';
+    gridB.appendChild(c);
+  });
+  colB.appendChild(gridB);
+  furnace.appendChild(colB);
+
+  // 融合预览
+  if(fuseState.aId && fuseState.bId){
+    var instA = fuseState.demoInstances.find(function(x){ return x.instanceId === fuseState.aId; });
+    var instB = fuseState.demoInstances.find(function(x){ return x.instanceId === fuseState.bId; });
+    var plan = SH.FusionEngine.plan(instA, instB);
+    var preview = el("div","panel");
+    preview.style.marginTop = "12px";
+    preview.appendChild(el("h2",null,"融合预览"));
+    if(!plan){
+      preview.appendChild(el("div","warn","⚠️ 无融合方案（已达等级上限或数据异常）"));
+    } else {
+      var defA = SH.monsterById(instA.defId), defB = SH.monsterById(instB.defId), defNew = SH.monsterById(plan.newDefId);
+      var fig = el("div","fuse-result-figure");
+      fig.innerHTML = '<div style="text-align:center;">'+orb(defA,'')+'<div class="name">'+defA.name+'</div><div class="sub">Lv.'+instA.level+'</div></div>'+
+        '<div class="fuse-plus">⚗️</div>'+
+        '<div style="text-align:center;">'+orb(defB,'')+'<div class="name">'+defB.name+'</div><div class="sub">Lv.'+instB.level+'</div></div>'+
+        '<div class="fuse-arrow">→</div>'+
+        '<div class="fuse-new" style="text-align:center;">'+orb(defNew,'')+'<div class="name" style="color:var(--jade-d);font-weight:bold;">'+defNew.name+'</div>'+
+          '<div class="sub">Lv.'+plan.newLevel+' <span class="badge '+rarityClass(defNew.rarity)+'">'+rarityLabel(defNew.rarity)+'</span></div>'+
+          '<div class="sub"><span class="e-badge" style="background:'+elemColor(defNew.element)+'">'+elemLabel(defNew.element)+'</span></div></div>';
+      preview.appendChild(fig);
+      var extras = el("div","muted");
+      extras.style.marginTop = "10px";
+      var recipeKey = [instA.defId, instB.defId].sort().join("|");
+      var known = SH.FusionEngine.RECIPES[recipeKey] ? "命中已知配方 ✅" : "稀有度兜底（取较高者）";
+      extras.innerHTML = known + " · 技能合并取前 4 · 消耗妖丹 <b style='color:var(--cinnabar);'>"+SH.FusionEngine.FUSE_COST_YAODAN+"</b>";
+      preview.appendChild(extras);
+      var btn = el("button");
+      btn.textContent = "🔥 执行融合（演示）";
+      btn.style.marginTop = "10px";
+      btn.setAttribute("data-act","fuse-execute");
+      preview.appendChild(btn);
+    }
+    furnace.appendChild(preview);
+  } else {
+    var hint = el("div","muted");
+    hint.style.marginTop = "12px";
+    hint.textContent = "👆 请先选妖 A + 妖 B 开始预览";
+    furnace.appendChild(hint);
+  }
+
+  panel.appendChild(furnace);
+  p.appendChild(panel);
+  return p;
+}
+
+function selectFuseA(id){ fuseState.aId = (fuseState.aId === id) ? null : id; fuseState.bId = null; render(); }
+function selectFuseB(id){ fuseState.bId = (fuseState.bId === id) ? null : id; render(); }
+function doFuseDemo(){
+  var instA = fuseState.demoInstances.find(function(x){ return x.instanceId === fuseState.aId; });
+  var instB = fuseState.demoInstances.find(function(x){ return x.instanceId === fuseState.bId; });
+  if(!instA || !instB){ alert("请先选两只妖"); return; }
+  var plan = SH.FusionEngine.plan(instA, instB);
+  if(!plan){ alert("融合失败：无有效方案"); return; }
+  fuseState.demoInstances = fuseState.demoInstances.filter(function(x){ return x.instanceId !== fuseState.aId && x.instanceId !== fuseState.bId; });
+  fuseState.demoInstances.push({ instanceId: "fused_" + Date.now(), defId: plan.newDefId, level: plan.newLevel, breakthrough: plan.newBreakthrough });
+  fuseState.aId = null; fuseState.bId = null; render();
+}
+
+// ═══════════ 阵容协同（FormationEngine + ComboEngine 可视化） ═══════════
+var fmState = { team: [], pool: [] };
+function renderFormation(){
+  var defs = Object.keys(SH.MONSTERS).map(function(k){ return SH.MONSTERS[k]; });
+  if(fmState.pool.length === 0){
+    fmState.pool = defs;
+    // 默认随机 4 只入场
+    fmRandom();
+  }
+
+  var p = el("div");
+  var panel = el("div","panel");
+  panel.appendChild(el("h2",null,"阵容协同"));
+  panel.appendChild(el("div","muted","为出战 4 妖搭配最佳阵容。FormationEngine 评估元素协同（PER_SYNERGY_MUL="+SH.FormationEngine.PER_SYNERGY_MUL+"，上限 +"+SH.FormationEngine.MAX_MUL+"）；ComboEngine 检测技能连携。"));
+
+  // ===== 第一行：当前 4 妖阵容槽位 =====
+  var slotsPanel = el("div","panel");
+  slotsPanel.style.marginTop = "12px";
+  slotsPanel.appendChild(el("h2",null,"出战阵容"));
+  var slotsGrid = el("div","grid c4");
+  for(var i=0; i<4; i++){
+    var slot = el("div","fm-team-slot");
+    slot.setAttribute("data-act","fm-pick");
+    slot.setAttribute("data-arg",""+i);
+    var inst = fmState.team[i];
+    if(inst){
+      var def = SH.monsterById(inst.defId);
+      slot.classList.add("filled");
+      slot.innerHTML = orb(def,'fm-orb') + '<div><div class="name">'+def.name+'</div><div class="sub"><span class="e-badge" style="background:'+elemColor(def.element)+'">'+elemLabel(def.element)+'</span></div></div>';
+    } else {
+      slot.innerHTML = '<span class="fm-add-hint">+ 点击选妖</span>';
+    }
+    slotsGrid.appendChild(slot);
+  }
+  slotsPanel.appendChild(slotsGrid);
+
+  // 操作按钮
+  var btns = el("div","row-flex");
+  btns.style.marginTop = "8px";
+  var rb = el("button","btn sm","🎲 随机阵容"); rb.setAttribute("data-act","fm-random"); btns.appendChild(rb);
+  var cb = el("button","btn sm ghost","🗑 清空"); cb.setAttribute("data-act","fm-clear"); btns.appendChild(cb);
+  slotsPanel.appendChild(btns);
+  panel.appendChild(slotsPanel);
+
+  // ===== 第二行：协同分析 =====
+  var analysis = el("div","panel");
+  analysis.style.marginTop = "12px";
+  analysis.appendChild(el("h2",null,"协同分析"));
+
+  if(fmState.team.length < 2){
+    analysis.appendChild(el("div","muted","请先选满至少 2 只妖开始分析。"));
+  } else {
+    // FormationEngine
+    var fePanel = el("div");
+    var teamForFe = fmState.team.map(function(inst){
+      var d = SH.monsterById(inst.defId);
+      return { element: d.element, defId: d.id, name: d.name };
+    });
+    var syn = SH.FormationEngine.evaluate(teamForFe);
+    var mul = SH.FormationEngine.teamAttackMultiplier(syn);
+
+    var feTitle = el("div","row-flex");
+    feTitle.innerHTML = '<b>📜 元素协同</b>　<span class="fm-pick-counter">（PER_SYNERGY_MUL='+SH.FormationEngine.PER_SYNERGY_MUL+'，cap '+SH.FormationEngine.MAX_MUL+'）</span>';
+    fePanel.appendChild(feTitle);
+
+    if(syn.length === 0){
+      fePanel.appendChild(el("div","muted","当前阵容无协同共鸣。尝试搭配多元素组合。"));
+    } else {
+      syn.forEach(function(s){
+        var row = el("div","fm-synergy-row");
+        row.innerHTML = '<span style="font-size:22px;">🪄</span>'+
+          '<div style="flex:1;">'+
+          '<div class="fm-sy-name">'+s.name+' <span class="muted" style="font-size:11px;">('+s.id+')</span></div>'+
+          (s.ultimateCharges ? '<div class="sub">奥义充能 <b>'+s.ultimateCharges+'</b></div>' : '')+
+          '</div>'+
+          '<div><span class="fm-sy-mul">+'+(s.atkMul*100).toFixed(0)+'%</span><div class="muted" style="font-size:11px;">攻击</div></div>';
+        fePanel.appendChild(row);
+      });
+    }
+    // 总倍率条
+    var totalRow = el("div");
+    totalRow.style.marginTop = "10px";
+    totalRow.innerHTML = '<b>总攻击倍率</b>　<span class="fm-sy-mul" style="color:var(--cinnabar);">×'+mul.toFixed(2)+'</span>';
+    var bar = el("div","fm-mul-bar");
+    var fill = el("div","fm-mul-bar-fill");
+    fill.style.width = Math.min((mul-1)/SH.FormationEngine.MAX_MUL*100, 100)+"%";
+    bar.appendChild(fill);
+    totalRow.appendChild(bar);
+    fePanel.appendChild(totalRow);
+    analysis.appendChild(fePanel);
+
+    // ComboEngine
+    analysis.appendChild(el("div","muted")).textContent = ""; // spacer
+    var cbPanel = el("div");
+    var skillIds = [];
+    fmState.team.forEach(function(inst){
+      var d = SH.monsterById(inst.defId);
+      if(d.skillIds) d.skillIds.forEach(function(s){ if(skillIds.indexOf(s) < 0) skillIds.push(s); });
+    });
+    var combos = SH.ComboEngine.availableCombos(skillIds);
+
+    cbPanel.appendChild(el("div","row-flex")).innerHTML = '<b>⚡ 技能连携</b>　<span class="fm-pick-counter">（'+skillIds.length+' 技能 · '+combos.length+' 连携命中）</span>';
+    if(combos.length === 0){
+      cbPanel.appendChild(el("div","muted","当前阵容暂无连携技能对。COMBOS 总数："+SH.ComboEngine.COMBOS.length+"。"));
+    } else {
+      var dmgMul = SH.ComboEngine.damageMultiplier(combos);
+      var healPct = SH.ComboEngine.healPercent(combos);
+      cbPanel.appendChild(el("div","muted")).innerHTML = '连携总伤害 <b style="color:var(--cinnabar);">×'+dmgMul.toFixed(2)+'</b>　·　连携治疗 <b style="color:var(--jade);">+'+(healPct*100).toFixed(0)+'%</b>';
+      combos.forEach(function(c){
+        var cbRow = el("div","fm-combo-row");
+        var kindLabel = c.kind === "DAMAGE_MUL" ? "伤害提升" : (c.kind === "HEAL_PERCENT" ? "治疗加成" : c.kind);
+        var kindIcon = c.kind === "DAMAGE_MUL" ? "🔥" : (c.kind === "HEAL_PERCENT" ? "💚" : "✨");
+        cbRow.innerHTML = '<span style="font-size:18px;">'+kindIcon+'</span>'+
+          '<div style="flex:1;"><div class="fm-cb-name">'+c.name+'</div>'+
+          '<div class="sub">需要: '+c.required.map(monName).join(' + ')+'</div>'+
+          '</div>'+
+          '<div><span class="fm-sy-mul">'+(c.kind==="HEAL_PERCENT"?'+':'×')+c.value+'</span><div class="muted" style="font-size:11px;">'+kindLabel+' · cd '+c.cd+'</div></div>';
+        cbPanel.appendChild(cbRow);
+      });
+    }
+    analysis.appendChild(cbPanel);
+  }
+  panel.appendChild(analysis);
+
+  // ===== 第三行：候选妖池（网格） =====
+  var poolPanel = el("div","panel");
+  poolPanel.style.marginTop = "12px";
+  var poolHeader = el("div","row-flex");
+  poolHeader.appendChild(el("h2"));
+  poolHeader.children[0].textContent = "妖池";
+  var counter = el("span","fm-pick-counter");
+  counter.style.marginLeft = "auto";
+  counter.textContent = "选 "+fmState.team.length+"/4";
+  poolHeader.appendChild(counter);
+  poolPanel.appendChild(poolHeader);
+  var pickGrid = el("div","grid fm-pick-grid");
+  pickGrid.style.gridTemplateColumns = "repeat(6, 1fr)";
+  fmState.pool.forEach(function(def){
+    var already = fmState.team.some(function(t){ return t.defId === def.id; });
+    var slotIdx = fmState.team.findIndex(function(t){ return t && t.defId === def.id; });
+    var cls = "card";
+    if(slotIdx >= 0) cls += " active";
+    if(fmState.team.length >= 4 && slotIdx < 0) cls += " disabled";
+    var c = el("div",cls);
+    c.setAttribute("data-act","fm-pick");
+    c.setAttribute("data-arg","pick:"+def.id);
+    c.style.opacity = (fmState.team.length >= 4 && slotIdx < 0) ? "0.4" : "1";
+    c.innerHTML = orb(def,'') + '<div class="name">'+def.name+'</div>'+
+      '<div class="sub"><span class="badge '+rarityClass(def.rarity)+'">'+rarityLabel(def.rarity)+'</span></div>';
+    pickGrid.appendChild(c);
+  });
+  poolPanel.appendChild(pickGrid);
+  panel.appendChild(poolPanel);
+
+  p.appendChild(panel);
+  return p;
+}
+
+function fmPick(arg){
+  if(arg.indexOf("pick:") === 0){
+    // 从妖池选一只，塞到第一个空槽位
+    var defId = arg.substring(5);
+    var slotIdx = fmState.team.findIndex(function(t){ return t && t.defId === defId; });
+    if(slotIdx >= 0){
+      // 已选 → 移除
+      fmState.team[slotIdx] = null;
+    } else {
+      // 找第一个空槽
+      if(fmState.team.length < 4){
+        fmState.team.push({ defId: defId, level: 15 });
+      } else {
+        // 替换最后一个
+        fmState.team[3] = { defId: defId, level: 15 };
+      }
+    }
+  } else {
+    // 点击槽位 → 清空该槽
+    var idx = parseInt(arg);
+    fmState.team[idx] = null;
+  }
+  // 清理 null
+  fmState.team = fmState.team.filter(function(t){ return t !== null && t !== undefined; });
+  render();
+}
+function fmClear(){ fmState.team = []; render(); }
+function fmRandom(){
+  var all = Object.keys(SH.MONSTERS).map(function(k){ return SH.MONSTERS[k]; });
+  fmState.team = [];
+  var used = {};
+  while(fmState.team.length < 4 && fmState.team.length < all.length){
+    var pick = all[Math.floor(Math.random()*all.length)];
+    if(!used[pick.id]){ used[pick.id] = true; fmState.team.push({ defId: pick.id, level: 15 }); }
+  }
+  render();
+}
+
+// ═══════════ 天赋分配（TalentEngine 可视化） ═══════════
+var talState = { instances: [], selectedIdx: 0 };
+function renderTalent(){
+  var all = Object.keys(SH.MONSTERS).map(function(k){ return SH.MONSTERS[k]; });
+  if(talState.instances.length === 0){
+    // 初始化 demo 妖实例（前 6 只，不同 breakthrough 用于展示 cap 变化）
+    talState.instances = all.slice(0, 6).map(function(def, i){
+      return { instanceId: "tal_"+i, defId: def.id, level: 10, breakthrough: Math.floor(i/2), talents: {} };
+    });
+  }
+
+  var p = el("div");
+  var panel = el("div","panel");
+  panel.appendChild(el("h2",null,"天赋分配"));
+  var desc = el("div","muted");
+  desc.innerHTML = "每妖有基础 <b>"+SH.TalentEngine.BASE_TALENT+"</b> 天赋点，每突破 +<b>"+SH.TalentEngine.TALENT_PER_BREAK+"</b>。三条分支各最多 <b>"+SH.TalentEngine.MAX_LAYER+"</b> 层：";
+  desc.innerHTML += '<br>⚔️ 攻击 +'+(SH.TalentEngine.ATK_PCT_PER_LAYER*100)+'%/层 · 🛡 防御 +'+(SH.TalentEngine.DEF_PCT_PER_LAYER*100)+'%/层（同时影响 HP +'+(SH.TalentEngine.HP_PCT_PER_LAYER*100)+'%/层）· 🌿 辅助 +'+(SH.TalentEngine.SPD_PCT_PER_LAYER*100)+'%/层';
+  panel.appendChild(desc);
+
+  // ===== 妖选择网格 =====
+  var selectPanel = el("div","panel");
+  selectPanel.style.marginTop = "12px";
+  selectPanel.appendChild(el("h2",null,"选择妖"));
+  var selGrid = el("div","grid c6");
+  talState.instances.forEach(function(inst, idx){
+    var def = SH.monsterById(inst.defId);
+    var cls = "card tal-monster-card" + (idx === talState.selectedIdx ? " active" : "");
+    var c = el("div",cls);
+    c.setAttribute("data-act","tal-select");
+    c.setAttribute("data-arg",""+idx);
+    c.innerHTML = orb(def,'') +
+      '<div class="name">'+def.name+'</div>'+
+      '<div class="sub">Lv.'+inst.level+' <span class="badge '+rarityClass(def.rarity)+'">'+rarityLabel(def.rarity)+'</span></div>'+
+      '<div class="sub">突破 '+inst.breakthrough+' · Cap '+SH.TalentEngine.talentCap(inst)+'</div>';
+    selGrid.appendChild(c);
+  });
+  selectPanel.appendChild(selGrid);
+  panel.appendChild(selectPanel);
+
+  // ===== 天赋分配（当前选中妖）=====
+  var cur = talState.instances[talState.selectedIdx];
+  var tPanel = el("div","panel");
+  tPanel.style.marginTop = "12px";
+  var curDef = SH.monsterById(cur.defId);
+  var curHead = el("div","row-flex");
+  curHead.innerHTML = orb(curDef,'') + '<div style="flex:1;margin-left:10px;"><div class="name">'+curDef.name+'</div><div class="sub">Lv.'+cur.level+' · 突破 '+cur.breakthrough+'</div></div>';
+  var pointInfo = SH.TalentEngine.talentCap(cur) + "/" + SH.TalentEngine.allocated(cur);
+  curHead.innerHTML += '<div style="text-align:right;"><b>天赋点</b><br><span style="font-size:18px;color:var(--cinnabar);font-weight:bold;">'+SH.TalentEngine.allocated(cur)+'/'+SH.TalentEngine.talentCap(cur)+'</span></div>';
+  tPanel.appendChild(curHead);
+
+  // 天赋点进度条
+  var cap = SH.TalentEngine.talentCap(cur);
+  var alloc = SH.TalentEngine.allocated(cur);
+  var barRow = el("div","tal-points-bar");
+  var track = el("div","tal-bar-track");
+  var fill = el("div","tal-bar-fill");
+  fill.style.width = Math.min((alloc/cap)*100, 100)+"%";
+  track.appendChild(fill);
+  var txt = el("div","tal-bar-text");
+  txt.textContent = alloc + " / " + cap;
+  track.appendChild(txt);
+  barRow.appendChild(track);
+  tPanel.appendChild(barRow);
+
+  // 三条分支
+  var branches = [
+    { key: "ATTACK", name: "⚔️ 攻击", gainLabel: "+"+(SH.TalentEngine.ATK_PCT_PER_LAYER*100)+"% ATK/层", attr: "atkMult" },
+    { key: "DEFENSE", name: "🛡 防御", gainLabel: "+"+(SH.TalentEngine.DEF_PCT_PER_LAYER*100)+"% DEF + "+(SH.TalentEngine.HP_PCT_PER_LAYER*100)+"% HP/层", attr: "defMult" },
+    { key: "SUPPORT", name: "🌿 辅助", gainLabel: "+"+(SH.TalentEngine.SPD_PCT_PER_LAYER*100)+"% SPD/层", attr: "spdMult" }
+  ];
+  var branchGrid = el("div","grid c3");
+  branches.forEach(function(br){
+    var layers = SH.TalentEngine.layersOf(cur, br.key);
+    var full = layers >= SH.TalentEngine.MAX_LAYER;
+    var canInvest = SH.TalentEngine.canAssign(cur, br.key);
+    var availPoints = cap - alloc;
+    var cls = "tal-branch";
+    if(full) cls += " full";
+    else if(availPoints <= 0) cls += " no-points";
+    else if(canInvest) cls += " can-invest";
+
+    var bc = el("div",cls);
+    var header = el("div","tal-branch-header");
+    header.innerHTML = '<span class="tal-branch-name">'+br.name+'</span>'+
+      '<span class="tal-branch-gain">Lv '+layers+'/'+SH.TalentEngine.MAX_LAYER+'</span>';
+    bc.appendChild(header);
+    bc.appendChild(el("div","muted",br.gainLabel));
+
+    // 三层圆点
+    var layerRow = el("div","tal-layers");
+    for(var l=0; l<SH.TalentEngine.MAX_LAYER; l++){
+      var layerEl = el("div","tal-layer");
+      if(l < layers){
+        layerEl.classList.add("filled");
+        layerEl.textContent = l+1;
+      } else {
+        layerEl.classList.add("locked");
+        layerEl.textContent = "?";
+      }
+      layerRow.appendChild(layerEl);
+    }
+    bc.appendChild(layerRow);
+
+    // 当前加成
+    var curGain = br.attr === "atkMult" ? SH.TalentEngine.atkMult(cur) :
+                  br.attr === "defMult" ? SH.TalentEngine.defMult(cur) :
+                  SH.TalentEngine.spdMult(cur);
+    bc.appendChild(el("div","muted", "当前：×"+curGain.toFixed(2)));
+
+    // 分配按钮
+    var invBtn = el("button","btn sm tal-invest-btn");
+    if(full){ invBtn.textContent = "已满层"; invBtn.disabled = true; }
+    else if(availPoints <= 0){ invBtn.textContent = "天赋点耗尽"; invBtn.disabled = true; }
+    else { invBtn.textContent = "分配 +1"; invBtn.setAttribute("data-act","tal-invest"); invBtn.setAttribute("data-arg",br.key); }
+    bc.appendChild(invBtn);
+    branchGrid.appendChild(bc);
+  });
+  tPanel.appendChild(branchGrid);
+
+  // Reset 按钮
+  var resetBtn = el("button","btn sm ghost","🗑 重置天赋");
+  resetBtn.setAttribute("data-act","tal-reset");
+  resetBtn.style.marginTop = "10px";
+  tPanel.appendChild(resetBtn);
+
+  panel.appendChild(tPanel);
+
+  // ===== 属性加成汇总 =====
+  var sumPanel = el("div","panel");
+  sumPanel.style.marginTop = "12px";
+  sumPanel.appendChild(el("h2",null,"属性加成汇总"));
+  var mults = [
+    { label: "ATK 攻击", val: SH.TalentEngine.atkMult(cur), icon: "⚔️" },
+    { label: "DEF 防御", val: SH.TalentEngine.defMult(cur), icon: "🛡" },
+    { label: "HP 生命", val: SH.TalentEngine.hpMult(cur), icon: "❤️" },
+    { label: "SPD 速度", val: SH.TalentEngine.spdMult(cur), icon: "💨" }
+  ];
+  mults.forEach(function(m){
+    var row = el("div","tal-mult-row");
+    var gain = (m.val - 1) * 100;
+    row.innerHTML = '<span>'+m.icon+' '+m.label+'</span>'+
+      '<span style="color:var(--cinnabar);font-weight:bold;">×'+m.val.toFixed(2)+'  <span class="muted" style="font-weight:normal;">(+'+gain.toFixed(0)+'%)</span></span>';
+    sumPanel.appendChild(row);
+  });
+  panel.appendChild(sumPanel);
+
+  p.appendChild(panel);
+  return p;
+}
+
+function talSelect(idx){ talState.selectedIdx = parseInt(idx); render(); }
+function talInvest(branch){
+  var inst = talState.instances[talState.selectedIdx];
+  var after = SH.TalentEngine.assign(inst, branch);
+  if(!after){ alert("无法分配（分支满或点数耗尽）"); return; }
+  talState.instances[talState.selectedIdx] = after;
+  render();
+}
+function talReset(){
+  var inst = talState.instances[talState.selectedIdx];
+  talState.instances[talState.selectedIdx] = { instanceId: inst.instanceId, defId: inst.defId, level: inst.level, breakthrough: inst.breakthrough, talents: {} };
+  render();
+}
+
+// ═══════════ 1. 巡妖图（地图 + 收妖触发 + GPS 防作弊演示） ═══════════
+function renderMap(){
+    var p = el("div");
+    var panel = el("div","panel");
+    panel.appendChild(el("h2",null,"巡妖图"));
+    panel.appendChild(el("div","muted","择一据点前往巡妖。地形影响妖类分布；下方可模拟 GPS 定位以演示防作弊（降速降品质 / 瞬移拒收）。"));
+
+    // GPS 模式
+    var gpsRow = el("div","row-flex"); gpsRow.style.marginTop="10px";
+    gpsRow.appendChild(el("span",null,"定位模式："));
+    var sel = el("select");
+    [["normal","正常巡行"],["degraded","疾行（降速·降品质）"],["rejected","瞬移（拒收·扣信誉）"]].forEach(function(o){
+      var op=el("option"); op.value=o[0]; op.textContent=o[1]; if(mapState.gpsMode===o[0]) op.selected=true; sel.appendChild(op);
+    });
+    sel.setAttribute("data-act","gps-mode");
+    gpsRow.appendChild(sel);
+    panel.appendChild(gpsRow);
+
+    // 4 节点
+    var grid = el("div","grid c2"); grid.style.marginTop="12px";
+    var icons = {"城隍桥":"🏯","古庙":"⛩️","老槐树":"🌳","东海之滨":"🌊"};
+    SH.LocationEngine.STRONGHOLD_NODES.forEach(function(name){
+      var card = el("div","card");
+      card.setAttribute("data-act","goto-node"); card.setAttribute("data-arg",name);
+      card.innerHTML = '<div style="font-size:30px">'+ (icons[name]||"⛰️") +'</div>'+
+                       '<div class="name">'+name+'</div>'+
+                       '<div class="sub">前往巡妖</div>';
+      grid.appendChild(card);
+    });
+    panel.appendChild(grid);
+
+    // 当前节点 + 遭遇
+    if(mapState.node){
+      var hp = el("div"); hp.style.marginTop="14px";
+      hp.appendChild(el("div","muted","当前驻跸：<b style='color:var(--jade-d)'>"+mapState.node+"</b>"));
+      if(mapState.integrity){
+        var t = mapState.integrity.tier;
+        var msg = t==="REJECTED"
+          ? '<div class="warn">⚠ '+mapState.integrity.reason+' — 收妖无效，信誉 -18</div>'
+          : (t==="DEGRADED"
+              ? '<div class="hint">⚡ '+mapState.integrity.reason+' — 本区降品质（神妖不出、仙妖×0.2）</div>'
+              : '<div class="ok">✓ '+mapState.integrity.reason+'</div>');
+        hp.innerHTML += msg;
+      }
+      if(mapState.spawns.length){
+        hp.appendChild(el("div","muted","<br/>察觉妖气（点击收妖）："));
+        var sg = el("div","grid c3"); sg.style.marginTop="8px";
+        mapState.spawns.forEach(function(id){
+          var mon = SH.monsterById(id);
+          var c = el("div","card mon-card");
+          c.setAttribute("data-act","capture-start"); c.setAttribute("data-arg",id);
+          c.innerHTML = orb(mon) + '<div class="name">'+mon.name+'</div>'+
+            '<div class="sub"><span class="badge '+rarityClass(mon.rarity)+'">'+rarityLabel(mon.rarity)+'</span> '+
+            '<span class="e-badge" style="background:'+elemColor(mon.element)+'">'+elemLabel(mon.element)+'</span></div>';
+          sg.appendChild(c);
+        });
+        hp.appendChild(sg);
+      } else if(mapState.integrity && mapState.integrity.tier!=="REJECTED"){
+        hp.appendChild(el("div","muted","<br/>此区暂无妖气，换个时辰或节点再探。"));
+      }
+      panel.appendChild(hp);
+    }
+
+    p.appendChild(panel);
+    return p;
+  }
+
+  function gotoNode(name){
+    mapState.node = name;
+    var coords = SH.LocationEngine.nodeCoordinates().filter(function(c){return c.name===name;})[0];
+    var lat = coords.lat, lng = coords.lng, now = Math.floor(Date.now()/1000); // 秒（与 LocationEngine 单位一致）
+    var ctx;
+    if(mapState.gpsMode==="degraded"){
+      // 约 1.1km / 100s ≈ 41km/h > 30 → 降速降品质
+      ctx = {lat:lat,lng:lng, ts:now, prevLat:lat, prevLng:lng-0.012, prevTs:now-100, hourOfDay:12, solarTerm:"NONE"};
+    } else if(mapState.gpsMode==="rejected"){
+      // 约 13km / 100s 且 <180s 窗口 → 瞬移拒收
+      ctx = {lat:lat,lng:lng, ts:now, prevLat:lat+0.12, prevLng:lng, prevTs:now-100, hourOfDay:12, solarTerm:"NONE"};
+    } else {
+      ctx = {lat:lat,lng:lng, ts:now, prevLat:null, prevLng:null, prevTs:0, hourOfDay:12, solarTerm:"NONE"};
+    }
+    mapState.integrity = SH.LocationEngine.spawnIntegrity(ctx);
+    mapState.spawns = SH.LocationEngine.safeSpawns(ctx, 3, Math.random);
+    if(mapState.integrity.tier==="REJECTED") player.penalizeRep("TELEPORT");
+    render();
+  }
+
+  // ═══════════ 2. 收妖聚灵环（忠实复刻 CaptureEngine） ═══════════
+  var ringAnim = { raf:0, start:0, cycle:2600, maxR:118, minR:20, curR:118, running:false, assist:false, monster:null };
+  function startCapture(id){
+    if(mapState.integrity && mapState.integrity.tier==="REJECTED"){
+      render(); return; // 弹层不开启，地图已提示拒收
+    }
+    captureTarget = id;
+    var mon = SH.monsterById(id);
+    ringAnim.monster = mon;
+    ringAnim.assist = false;
+    $("cap-assist").checked = false;
+    $("cap-mon").innerHTML = mon.name + ' <span class="badge '+rarityClass(mon.rarity)+'">'+rarityLabel(mon.rarity)+'</span>';
+    $("cap-result").innerHTML = "";
+    ringAnim.cycle = SH.CaptureEngine.ringCycleMs(mon.rarity, false);
+    $("capture-modal").classList.remove("hidden");
+    ringAnim.start = performance.now();
+    ringAnim.running = true;
+    loopRing();
+  }
+  function loopRing(){
+    if(!ringAnim.running) return;
+    var ph = (performance.now()-ringAnim.start) % ringAnim.cycle;
+    var s = Math.sin((ph/ringAnim.cycle)*Math.PI); // 0→1→0
+    ringAnim.curR = ringAnim.maxR - (ringAnim.maxR-ringAnim.minR)*s;
+    drawRing();
+    // 实时预测
+    var acc = SH.CaptureEngine.accuracy(ringAnim.curR, ringAnim.minR, ringAnim.maxR, ringAnim.assist);
+    var p = SH.CaptureEngine.successProbability(acc, ringAnim.monster.rarity, ringAnim.assist, 1.0);
+    $("cap-live").innerHTML = "精度 <b>"+Math.round(acc*100)+"%</b> · 预计收妖率 <b>"+Math.round(p*100)+"%</b>";
+    ringAnim.raf = requestAnimationFrame(loopRing);
+  }
+  function drawRing(){
+    var cv = $("ring-canvas"), ctx = cv.getContext("2d");
+    var cx=130, cy=130;
+    ctx.clearRect(0,0,260,260);
+    // 目标圈（玉色，理想命中点）
+    ctx.beginPath(); ctx.arc(cx,cy,ringAnim.minR,0,Math.PI*2);
+    ctx.strokeStyle="#2f6b5e"; ctx.lineWidth=3; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+    // 动画圈（朱砂）
+    ctx.beginPath(); ctx.arc(cx,cy,ringAnim.curR,0,Math.PI*2);
+    ctx.strokeStyle="#b23a2e"; ctx.lineWidth=4; ctx.stroke();
+    // 中心妖名
+    ctx.fillStyle="#332b22"; ctx.font="bold 22px KaiTi, serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText((ringAnim.monster.name||"").charAt(0), cx, cy);
+  }
+  function captureTap(){
+    if(!ringAnim.running) return;
+    ringAnim.running = false; cancelAnimationFrame(ringAnim.raf);
+    ringAnim.assist = $("cap-assist").checked;
+    var acc = SH.CaptureEngine.accuracy(ringAnim.curR, ringAnim.minR, ringAnim.maxR, ringAnim.assist);
+    var res = player.attemptCapture(captureTarget, acc, ringAnim.assist, Math.random);
+    var mon = res.monster;
+    var html;
+    if(res.success){
+      html = '<span class="ok">收妖成功！'+mon.name+' 入袋'+(res.duplicate?'（重复·妖丹+'+res.yaodanGain+'）':'')+'</span>';
+      html += '<br/><span class="muted">成功率 '+Math.round(res.probability*100)+'% · 精度 '+Math.round(acc*100)+'%</span>';
+    } else {
+      html = '<span class="warn">收妖未成（成功率 '+Math.round(res.probability*100)+'% · 精度 '+Math.round(acc*100)+'%）'+(res.struggled?' · 妖力挣扎':'')+'</span>';
+    }
+    $("cap-result").innerHTML = html;
+    updateTopbar();
+  }
+  function closeCapture(){
+    ringAnim.running=false; cancelAnimationFrame(ringAnim.raf);
+    $("capture-modal").classList.add("hidden");
+    render();
+  }
+
+  // ═══════════ 3. 妖典（图鉴） ═══════════
+  function renderCodex(){
+    var p = el("div");
+    if(codexDetail){ p.appendChild(codexDetailView(codexDetail)); return p; }
+    var panel = el("div","panel");
+    panel.appendChild(el("h2",null,"妖典 · 图鉴"));
+    var c = player.raw.codex.regionCaught(), total = player.raw.codex.regionTotal();
+    panel.appendChild(el("div","muted","已收录 <b style='color:var(--jade-d)'>"+c+"</b> / "+total+" 种（"+Math.round(player.raw.codex.regionCompletion()*100)+"%）。"));
+    // 里程碑
+    var ms = player.raw.codex.milestones();
+    var msRow = el("div"); msRow.style.marginTop="8px";
+    ms.forEach(function(m){
+      msRow.appendChild(el("span","pill",(m.reached?"✓ ":"○ ")+m.threshold+"种 · "+m.reward));
+    });
+    panel.appendChild(msRow);
+
+    var grid = el("div","grid c4"); grid.style.marginTop="12px";
+    Object.keys(SH.MONSTERS).map(function(k){return SH.MONSTERS[k];}).forEach(function(mon){
+      var got = player.raw.codex.has(mon.id);
+      var c2 = el("div","card mon-card");
+      if(!got) c2.classList.add("silhouette");
+      c2.setAttribute("data-act", got?"codex-detail":"none");
+      if(got) c2.setAttribute("data-arg",mon.id);
+      c2.style.cursor = got?"pointer":"default";
+      c2.innerHTML = orb(mon) + '<div class="name">'+(got?mon.name:"？？")+'</div>'+
+        '<div class="sub">'+(got?'<span class="badge '+rarityClass(mon.rarity)+'">'+rarityLabel(mon.rarity)+'</span>':'未发现')+'</div>';
+      grid.appendChild(c2);
+    });
+    panel.appendChild(grid);
+    p.appendChild(panel);
+    return p;
+  }
+  function codexDetailView(id){
+    var mon = SH.monsterById(id);
+    var panel = el("div","panel");
+    var back = el("div","btn ghost sm","← 返回图鉴"); back.setAttribute("data-act","codex-back");
+    panel.appendChild(back);
+    panel.appendChild(el("h2",null,mon.name));
+    var head = el("div","row-flex"); head.style.margin="10px 0";
+    head.innerHTML = orb(mon,"") + '<div><div class="badge '+rarityClass(mon.rarity)+'">'+rarityLabel(mon.rarity)+'</div>'+
+      ' <span class="e-badge" style="background:'+elemColor(mon.element)+'">'+elemLabel(mon.element)+'</span>'+
+      ' <span class="pill">'+catLabel(mon.category)+'</span>'+(mon.clan?('<span class="pill">'+mon.clan+'族</span>'):'')+'</div>';
+    panel.appendChild(head);
+    panel.appendChild(el("div","muted", mon.desc||""));
+    // 基础数值（Lv1）
+    var b = SH.statsAtLevel(mon,1);
+    var tbl = el("table","stat-tbl");
+    tbl.innerHTML = "<tr><td>基础 攻 / 防 / 命 / 速</td><td>"+b.atk+" / "+b.def+" / "+b.hp+" / "+b.spd+"</td></tr>"+
+      "<tr><td>成长系数</td><td>"+SH.RARITY_GROWTH[mon.rarity]+"</td></tr>"+
+      "<tr><td>进化目标</td><td>"+(mon.evolveTo?SH.monsterById(mon.evolveTo).name:"—（顶端）")+"</td></tr>";
+    panel.appendChild(tbl);
+    // 技能
+    panel.appendChild(el("div","muted","<br/>天赋技能："));
+    SH.skillsOf(mon).forEach(function(sk){
+      panel.appendChild(el("div","skill-line",'• '+sk.name+' <span class="e-badge" style="background:'+elemColor(sk.element)+'">'+elemLabel(sk.element)+'</span> 威力'+sk.power+(sk.isDamage?"（伤）":"（辅）")+(sk.critBonus?(" 暴击+"+Math.round(sk.critBonus*100)+"%"):"")));
+    });
+    return panel;
+  }
+
+  // ═══════════ 4. 祈妖（抽卡） ═══════════
+  function renderGacha(){
+    var p = el("div");
+    var panel = el("div","panel");
+    panel.appendChild(el("h2",null,"祈妖坛"));
+    var ss = player.raw.gachaState.sinceShen;
+    panel.appendChild(el("div","muted","单抽 <b>60</b> 灵玉 · 十连 <b>540</b> 灵玉（保底：距上次神妖 "+ss+" 抽，软保底第50抽起、硬保底第90抽必出神）。"));
+
+    var row = el("div","row-flex"); row.style.marginTop="12px";
+    var b1=el("button","btn","单抽（60灵玉）"); b1.setAttribute("data-act","gacha-single");
+    var b2=el("button","btn","十连（540灵玉）"); b2.setAttribute("data-act","gacha-ten");
+    var b3=el("button","btn ghost sm","清空"); b3.setAttribute("data-act","gacha-clear");
+    if(player.raw.lingyu<60) b1.disabled=true;
+    if(player.raw.lingyu<540) b2.disabled=true;
+    row.appendChild(b1); row.appendChild(b2); row.appendChild(b3);
+    panel.appendChild(row);
+
+    if(gachaResults.length){
+      var grid = el("div","grid c5"); grid.style.marginTop="14px";
+      gachaResults.forEach(function(r){
+        var c=el("div","card mon-card");
+        c.innerHTML = orb(r.monster) + '<div class="name">'+r.monster.name+'</div>'+
+          '<div class="sub"><span class="badge '+rarityClass(r.monster.rarity)+'">'+rarityLabel(r.monster.rarity)+'</span>'+(r.duplicate?'<br/>重复+'+r.yaodanGain+'丹':'')+'</div>';
+        grid.appendChild(c);
+      });
+      panel.appendChild(grid);
+    }
+    p.appendChild(panel);
+    return p;
+  }
+
+  // ═══════════ 5. 试炼（对战） ═══════════
+  function renderBattle(){
+    var p = el("div");
+    var panel = el("div","panel");
+    panel.appendChild(el("h2",null,"试炼 · 对战"));
+    if(!battle){
+      panel.appendChild(el("div","muted","派出妖队（取编队前 3 只）挑战来犯之妖。伤害公式忠实复刻 BattleEngine：<br/>"+
+        "伤害 = ⌊(攻/防)·威力·等级系数·元素克制·类别克制·暴击·随机·队伍羁绊·宗门·据点⌋。"));
+      // 天气 / 地形（影响战斗环境乘子，GDD 十九）
+      var envRow = el("div","row-flex"); envRow.style.marginTop="10px";
+      envRow.appendChild(el("span",null,"天气："));
+      var wsel = el("select"); wsel.setAttribute("data-act","battle-weather");
+      [["CLEAR","晴（无偏）"],["RAIN","雨（水×1.3/火×0.8）"],["SNOW","雪（火×0.7/水×1.2）"],["WINDY","风（风×1.3/土×0.8）"]].forEach(function(o){
+        var op=el("option"); op.value=o[0]; op.textContent=o[1]; if(battleEnv.weather===o[0]) op.selected=true; wsel.appendChild(op);
+      });
+      envRow.appendChild(wsel);
+      envRow.appendChild(el("span",null,"　地形："));
+      var tsel = el("select"); tsel.setAttribute("data-act","battle-terrain");
+      [["","无偏"],["WOOD","山林（木×1.2）"],["WATER","水域·东海（水×1.2）"],["EARTH","古墓（土×1.2）"]].forEach(function(o){
+        var op=el("option"); op.value=o[0]; op.textContent=o[1]; if((battleEnv.terrain||"")===o[0]) op.selected=true; tsel.appendChild(op);
+      });
+      envRow.appendChild(tsel);
+      panel.appendChild(envRow);
+      var row=el("div","row-flex"); row.style.marginTop="12px";
+      var b=el("button","btn red","挑战随机妖"); b.setAttribute("data-act","battle-new");
+      row.appendChild(b);
+      panel.appendChild(row);
+      // 编队预览
+      var tc = player.teamCombatants();
+      panel.appendChild(el("div","muted","<br/>当前编队（"+player.raw.team.length+" 只）："));
+      var sg=el("div","grid c3"); sg.style.marginTop="8px";
+      tc.combatants.slice(0,3).forEach(function(cb){
+        var mon=cb.monster;
+        var comboHtml = cb.combos.length ? ('<div class="sub" style="color:var(--gold)">连携：'+cb.combos.map(function(c){return c.name+"×"+c.value;}).join("、")+'</div>') : '';
+        var c=el("div","card mon-card"); c.innerHTML=orb(mon,"sm")+'<div class="name">'+mon.name+'</div>'+
+          '<div class="sub">Lv'+cb.level+' · 攻'+cb.effective.atk+'</div>'+comboHtml;
+        sg.appendChild(c);
+      });
+      panel.appendChild(sg);
+      if(tc.synergies.length){
+        panel.appendChild(el("div","muted","<br/>激活羁绊："+tc.synergies.map(function(s){return s.name;}).join("、")+
+          "（队伍攻击 ×"+tc.teamMul.toFixed(2)+"）"));
+      }
+      // 排位 Ban/Pick 选将演练（RankBanPickEngine：双方各 ban 2 / pick 3，ban 并集移出可用池）
+      if(!draft) draft = { bannedA:[], bannedB:[], pickedA:[], pickedB:[] };
+      var R = SH.RankBanPickEngine, A = R.Side.A, DR = R.DraftResult;
+      var dpanel = el("div","panel"); dpanel.style.marginTop="14px";
+      dpanel.appendChild(el("h3",null,"排位选将 · Ban/Pick 演练"));
+      dpanel.appendChild(el("div","muted","双方各禁 2 只、各选 3 只出战；被禁妖移出可用池，双方均不可选。"));
+      // 两列：我方 A（可点）/ 敌方 B（按钮随机生成）
+      var cols = el("div","row-flex"); cols.style.gap="14px"; cols.style.marginTop="8px";
+      // 我方 A
+      var colA = el("div"); colA.style.flex="1";
+      colA.appendChild(el("div","name","我方 A"));
+      colA.appendChild(el("div","muted","禁用："+(draft.bannedA.length?draft.bannedA.map(monName).join("、"):"—")+"（"+draft.bannedA.length+"/2）"));
+      colA.appendChild(el("div","muted","出战："+(draft.pickedA.length?draft.pickedA.map(monName).join("、"):"—")+"（"+draft.pickedA.length+"/3）"));
+      var banBtn = el("button","btn sm","随机禁 1（A）"); banBtn.setAttribute("data-act","draft-ban-a");
+      var pickBtn = el("button","btn sm","随机选 1（A）"); pickBtn.setAttribute("data-act","draft-pick-a");
+      var ra = el("div","row-flex"); ra.style.marginTop="6px"; ra.appendChild(banBtn); ra.appendChild(pickBtn); colA.appendChild(ra);
+      // 敌方 B
+      var colB = el("div"); colB.style.flex="1";
+      colB.appendChild(el("div","name","敌方 B"));
+      colB.appendChild(el("div","muted","禁用："+(draft.bannedB.length?draft.bannedB.map(monName).join("、"):"—")+"（"+draft.bannedB.length+"/2）"));
+      colB.appendChild(el("div","muted","出战："+(draft.pickedB.length?draft.pickedB.map(monName).join("、"):"—")+"（"+draft.pickedB.length+"/3）"));
+      var rbBtn = el("button","btn sm ghost","随机生成 B 选将"); rbBtn.setAttribute("data-act","draft-gen-b");
+      var rb2 = el("div","row-flex"); rb2.style.marginTop="6px"; rb2.appendChild(rbBtn); colB.appendChild(rb2);
+      cols.appendChild(colA); cols.appendChild(colB); dpanel.appendChild(cols);
+      // 可用池
+      var pool = R.availablePool(draft);
+      dpanel.appendChild(el("div","muted","<br/>可用池（"+pool.length+" 只，点选手动 ban/pick 我方 A）："));
+      var pg = el("div","grid c4"); pg.style.marginTop="6px";
+      pool.slice(0,24).forEach(function(id){
+        var c = el("div","card sm"); c.setAttribute("data-act","draft-pool"); c.setAttribute("data-arg",id);
+        c.innerHTML = '<div class="sub">'+monName(id)+'</div>';
+        pg.appendChild(c);
+      });
+      dpanel.appendChild(pg);
+      // 完成态
+      var done = R.isComplete(draft);
+      dpanel.appendChild(el("div", done?"ok":"muted","<br/>选将"+(done?"✅ 完成（双方 ban×2 / pick×3 已满）":"进行中…（我方 A 禁"+draft.bannedA.length+"/2 选"+draft.pickedA.length+"/3）")));
+      var reset = el("button","btn sm ghost","重置选将"); reset.setAttribute("data-act","draft-reset");
+      var rrb = el("div","row-flex"); rrb.style.marginTop="8px"; rrb.appendChild(reset); dpanel.appendChild(rrb);
+      panel.appendChild(dpanel);
+    } else {
+      panel.appendChild(battleView());
+    }
+    p.appendChild(panel);
+    return p;
+  }
+  function battleView(){
+    var wrap=el("div");
+    // 战局环境 + 连携状态
+    var wLabel = ({CLEAR:"晴",RAIN:"雨",SNOW:"雪",WINDY:"风"})[battle.env.weather]||"晴";
+    var tLabel = battle.env.terrain ? (battle.env.terrain+" 偏") : "无地形";
+    wrap.appendChild(el("div","muted","战局环境：天气 "+wLabel+" · 地形 "+tLabel+
+      (battle.active.combos.length?(" · 连携就绪："+battle.active.combos.map(function(c){return c.name;}).join("、")):"")));
+    wrap.appendChild(el("div","muted","排位段位："+player.rankTierName()+" <b>"+player.raw.rankPoints+"</b>/100"+
+      (player.raw.rankTierIndex>=SH.RankEngine.MAX_TIER_INDEX?" · 化神封顶":"")));
+    // 敌我血条
+    function bar(name, hp, max, extra){
+      var d=el("div"); d.style.margin="8px 0";
+      d.innerHTML='<div class="row-flex"><span>'+name+'</span><span class="muted">'+Math.max(0,hp)+' / '+max+(extra||"")+'</span></div>';
+      var bar=el("div","bar"); var i=el("i"); i.style.width=Math.max(0,Math.min(100,hp/max*100))+"%"; bar.appendChild(i); d.appendChild(bar);
+      return d;
+    }
+    wrap.appendChild(bar("敌 · "+battle.enemy.monster.name, battle.enemy.hp, battle.enemy.maxHp, " Lv"+battle.enemy.level));
+    wrap.appendChild(bar("我 · "+battle.active.monster.name, battle.active.hp, battle.active.maxHp, " Lv"+battle.active.level));
+
+    if(battle.over){
+      wrap.appendChild(el("div", battle.won?"ok":"warn", battle.won?("试炼得胜！获得妖丹 +30"):"妖队不敌，再接再厉。"));
+      var back=el("button","btn ghost sm","返回"); back.setAttribute("data-act","battle-back");
+      var rb=el("div","row-flex"); rb.style.marginTop="10px"; rb.appendChild(back); wrap.appendChild(rb);
+    } else {
+      // 技能按钮
+      wrap.appendChild(el("div","muted","<br/>选择招式："));
+      var sg=el("div","grid c2"); sg.style.marginTop="6px";
+      battle.active.skills.forEach(function(sk,idx){
+        var c=el("div","card"); c.setAttribute("data-act","battle-skill"); c.setAttribute("data-arg",idx);
+        c.innerHTML='<div class="name" style="font-size:15px">'+sk.name+'</div>'+
+          '<div class="sub"><span class="e-badge" style="background:'+elemColor(sk.element)+'">'+elemLabel(sk.element)+'</span> 威力'+sk.power+(sk.critBonus?(" 暴击+"+Math.round(sk.critBonus*100)+"%"):"")+'</div>';
+        sg.appendChild(c);
+      });
+      wrap.appendChild(sg);
+    }
+    // 日志
+    wrap.appendChild(el("div","muted","<br/>战报："));
+    var log=el("div","log");
+    battle.log.slice(-8).forEach(function(line){ log.appendChild(el("div",null,line)); });
+    wrap.appendChild(log);
+    return wrap;
+  }
+  function startBattle(){
+    var enemyDef = SH.randomEncounter(Math.random);
+    var maxLv = player.raw.team.reduce(function(mx,id){return Math.max(mx, player.raw.owned[id].level);},5);
+    var enemyLv = Math.max(5, Math.min(maxLv+2, 60));
+    var enemyInst = {instanceId:"enemy", defId:enemyDef.id, level:enemyLv, breakthrough:0, tribulations:0, talents:{}};
+    var enemy = SH.makeCombatant(enemyInst);
+    var tc = player.teamCombatants();
+    var roster = tc.combatants.slice(0,3).map(function(cb){ var n=SH.makeCombatant(player.raw.owned[cb.instance.instanceId]); return n; });
+    battle = { roster:roster, active:roster[0], enemy:enemy, log:[], over:false, won:false, tc:tc,
+                env:{ weather:battleEnv.weather, terrain:battleEnv.terrain } };
+    battle.log.push("遭遇 "+enemy.monster.name+"（Lv"+enemyLv+"）！");
+    render();
+  }
+  function battleSkill(idx){
+    if(battle.over) return;
+    var sk = battle.active.skills[idx];
+    if(!sk) return;
+    var tc = battle.tc;
+    // 天气/地形环境乘子（GDD 十九）
+    var envMul = SH.WeatherEngine.envMultiplier(sk.element, battle.env.weather, battle.env.terrain);
+    var d = SH.BattleEngine.damage(battle.active, battle.enemy, sk, Math.random, tc.teamMul, envMul, tc.sectAtk);
+    // 连携组合技（GDD 七）：每回合取首条可用连携，施加于整段伤害 / 自身回血
+    var cdmg = d.damage, comboName = null;
+    var combo = battle.active.combos && battle.active.combos[0];
+    if(combo){
+      comboName = combo.name;
+      if(combo.kind==="DAMAGE_MUL") cdmg = Math.max(1, Math.floor(d.damage * combo.value));
+      else if(combo.kind==="HEAL_PERCENT"){
+        var heal = Math.floor(battle.active.maxHp * combo.value);
+        battle.active.hp = Math.min(battle.active.maxHp, battle.active.hp + heal);
+        cdmg = d.damage;
+      }
+    }
+    battle.enemy.hp -= cdmg;
+    battle.log.push((d.crit?'<span class="crit">会心！</span>':'')+"我方 "+battle.active.monster.name+" 使「"+sk.name+"」"+
+      (comboName?'<span class="good">【'+comboName+'】</span>':'')+"造成 <b>"+cdmg+"</b> 伤害（"+d.label+(Math.abs(envMul-1.0)>1e-9?(" · 环境×"+envMul.toFixed(2)):"")+"）");
+    if(battle.enemy.hp<=0){
+      battle.over=true; battle.won=true;
+      player.raw.yaodan += 30;
+      player.addFatigue(SH.FatigueEngine.FATIGUE_BATTLE); // 对战累积疲劳（防脚本）
+      var rr = player.applyRankResult(true); // 排位胜 → 段位积分（满100升段、化神封顶）
+      var rankMsg = "排位 "+player.rankTierName()+"（"+player.raw.rankPoints+"/100）";
+      if(rr.promoted){ var rw=SH.RankEngine.rankReward(rr.tierIndex); rankMsg += " ⬆升段！荣誉 香火+"+rw.incense+" 灵玉+"+rw.lingyu+" 妖丹+"+rw.yaodan; }
+      recordBattleWin(battle.enemy.monster.element);
+      battle.log.push('<span class="good">敌妖溃败，试炼得胜！（疲劳 +'+SH.FatigueEngine.FATIGUE_BATTLE+' · '+rankMsg+'）</span>');
+      render(); return;
+    }
+    // 敌方反击（同样受天气/地形影响）
+    var esk = SH.BattleEngine.bestCounterSkill(battle.enemy, battle.active) || battle.enemy.skills[0];
+    if(esk){
+      var eEnv = SH.WeatherEngine.envMultiplier(esk.element, battle.env.weather, battle.env.terrain);
+      var ed = SH.BattleEngine.damage(battle.enemy, battle.active, esk, Math.random, 1.0, eEnv, 1.0);
+      battle.active.hp -= ed.damage;
+      battle.log.push((ed.crit?'<span class="crit">敌方会心！</span>':'')+battle.enemy.monster.name+" 使「"+esk.name+"」造成 <b>"+ed.damage+"</b> 伤害"+(Math.abs(eEnv-1.0)>1e-9?("（环境×"+eEnv.toFixed(2)+"）"):""));
+    }
+    if(battle.active.hp<=0){
+      // 换下一只
+      var next = battle.roster.filter(function(c){return c.isAlive();})[0];
+      if(next){ battle.active = next; battle.log.push("派出 "+next.monster.name+" 接续战斗！"); }
+      else { battle.over=true; battle.won=false;
+        var lr = player.applyRankResult(false); // 排位负 → 扣积分（不足0降段、炼气保底）
+        battle.log.push('<span class="bad">妖队全员力竭……（排位 '+player.rankTierName()+' '+player.raw.rankPoints+'/100'+(lr.demoted?' ⬇降段':'')+'）</span>'); }
+    }
+    render();
+  }
+  function recordBattleWin(elem){
+    player.raw.quests.WIN_BATTLE++;
+    if(elem) player.raw.quests.winWithElement[elem]=(player.raw.quests.winWithElement[elem]||0)+1;
+  }
+  // ── 排位 Ban/Pick 演练（RankBanPickEngine） ──
+  function draftRand(pool){ return pool.length ? pool[Math.floor(Math.random()*pool.length)] : null; }
+  function draftBanA(){
+    var R = SH.RankBanPickEngine, A = R.Side.A;
+    var pool = R.availablePool(draft).filter(function(id){ return draft.bannedA.indexOf(id)<0 && draft.pickedA.indexOf(id)<0; });
+    if(draft.bannedA.length>=R.BAN_PER_SIDE || !pool.length){ render(); return; }
+    var res = R.ban(draft, A, draftRand(pool)); if(res[1]===R.DraftResult.OK) draft = res[0];
+    render();
+  }
+  function draftPickA(){
+    var R = SH.RankBanPickEngine, A = R.Side.A;
+    var pool = R.availablePool(draft).filter(function(id){ return draft.pickedA.indexOf(id)<0; });
+    if(draft.pickedA.length>=R.PICK_PER_SIDE || !pool.length){ render(); return; }
+    var res = R.pick(draft, A, draftRand(pool)); if(res[1]===R.DraftResult.OK) draft = res[0];
+    render();
+  }
+  function draftGenB(){
+    var R = SH.RankBanPickEngine, B = R.Side.B;
+    var base = { bannedA:draft.bannedA.slice(), bannedB:[], pickedA:draft.pickedA.slice(), pickedB:[] };
+    var pool = R.availablePool(base).filter(function(id){ return base.pickedA.indexOf(id)<0; });
+    while(base.bannedB.length<R.BAN_PER_SIDE && pool.length){
+      var id = draftRand(pool); var r = R.ban(base, B, id); if(r[1]===R.DraftResult.OK) base=r[0];
+      pool = R.availablePool(base).filter(function(x){ return base.pickedA.indexOf(x)<0; });
+    }
+    pool = R.availablePool(base).filter(function(id){ return base.pickedB.indexOf(id)<0; });
+    while(base.pickedB.length<R.PICK_PER_SIDE && pool.length){
+      var id = draftRand(pool); var r = R.pick(base, B, id); if(r[1]===R.DraftResult.OK) base=r[0];
+      pool = R.availablePool(base).filter(function(x){ return base.pickedB.indexOf(x)<0; });
+    }
+    draft = base; render();
+  }
+  function draftPool(id){
+    var R = SH.RankBanPickEngine, A = R.Side.A;
+    if(draft.bannedA.indexOf(id)>=0 || draft.pickedA.indexOf(id)>=0){ render(); return; }
+    if(draft.pickedA.length < R.PICK_PER_SIDE){ var rp = R.pick(draft, A, id); if(rp[1]===R.DraftResult.OK) draft=rp[0]; }
+    else if(draft.bannedA.length < R.BAN_PER_SIDE){ var rb = R.ban(draft, A, id); if(rb[1]===R.DraftResult.OK) draft=rb[0]; }
+    render();
+  }
+
+  // ═══════════ 6. 养成 ═══════════
+  function renderCultivate(){
+    var p=el("div");
+    var panel=el("div","panel");
+    panel.appendChild(el("h2",null,"洞天 · 养成"));
+    if(!cultSel){
+      panel.appendChild(el("div","muted","选择一只妖进行修炼 / 突破 / 进化 / 渡劫 / 点化天赋。"));
+      var grid=el("div","grid c3"); grid.style.marginTop="10px";
+      player.ownedMonsterView().forEach(function(v){
+        var mon=v.monster, inst=v.instance;
+        var c=el("div","card mon-card"); c.setAttribute("data-act","cult-select"); c.setAttribute("data-arg",inst.instanceId);
+        c.innerHTML=orb(mon)+'<div class="name">'+mon.name+'</div>'+
+          '<div class="sub">Lv'+inst.level+' · '+inst.breakthrough+'突'+(inst.tribulations?(' '+inst.tribulations+'劫'):'')+'</div>';
+        grid.appendChild(c);
+      });
+      panel.appendChild(grid);
+    } else {
+      panel.appendChild(cultDetailView(cultSel));
+    }
+    p.appendChild(panel); return p;
+  }
+  function cultDetailView(id){
+    var inst = player.raw.owned[id];
+    var mon = SH.monsterById(inst.defId);
+    var wrap=el("div");
+    var back=el("div","btn ghost sm","← 返回"); back.setAttribute("data-act","cult-select"); back.setAttribute("data-arg","");
+    wrap.appendChild(back);
+    var head=el("div","row-flex"); head.style.margin="10px 0";
+    head.innerHTML=orb(mon,"")+'<div><div class="name" style="font-size:18px">'+mon.name+'</div>'+
+      '<span class="badge '+rarityClass(mon.rarity)+'">'+rarityLabel(mon.rarity)+'</span> '+
+      '<span class="pill">Lv'+inst.level+' / '+SH.CultivationEngine.levelCap(inst)+'上限</span>'+
+      '<span class="pill">'+inst.breakthrough+' 次突破</span>'+(inst.tribulations?('<span class="pill">'+inst.tribulations+' 劫</span>'):'')+'</div>';
+    wrap.appendChild(head);
+    // 经验条
+    var expNeed = SH.CultivationEngine.expForLevel(inst.level);
+    var eb=el("div","bar"); var ei=el("i"); ei.style.width=(inst.exp/expNeed*100)+"%"; eb.appendChild(ei);
+    wrap.appendChild(el("div","muted","经验 "+inst.exp+" / "+expNeed));
+    wrap.appendChild(eb);
+    // 有效数值（含装备加成）
+    var eff = SH.CultivationEngine.effectiveStats(inst);
+    var ms = player.monsterStats(id);
+    var eqb = ms.equipment;
+    var tbl=el("table","stat-tbl");
+    tbl.innerHTML="<tr><td>养成 攻 / 防 / 命 / 速</td><td>"+eff.atk+" / "+eff.def+" / "+eff.hp+" / "+eff.spd+"</td></tr>"+
+      "<tr><td>装备 加成</td><td>"+(eqb.atk||eqb.def||eqb.hp||eqb.spd?("+"+eqb.atk+" / +"+eqb.def+" / +"+eqb.hp+" / +"+eqb.spd):"（未披挂）")+"</td></tr>"+
+      "<tr><td>含装备 总计</td><td>"+ms.total.atk+" / "+ms.total.def+" / "+ms.total.hp+" / "+ms.total.spd+"</td></tr>"+
+      "<tr><td>进化链</td><td>"+SH.CultivationEngine.evolutionChain(inst.defId).map(function(x){return SH.monsterById(x).name;}).join(" → ")+"</td></tr>";
+    wrap.appendChild(tbl);
+
+    // 操作按钮
+    var row=el("div","row-flex"); row.style.marginTop="12px";
+    var train=el("button","btn sm","修炼 +120经验（妖丹-20）"); train.setAttribute("data-act","cult-train"); train.setAttribute("data-arg",id);
+    if(player.raw.yaodan<20) train.disabled=true;
+    row.appendChild(train);
+    var brk=el("button","btn sm","突破（妖丹"+SH.CultivationEngine.breakthroughCost(inst.breakthrough)+"）");
+    brk.setAttribute("data-act","cult-break"); brk.setAttribute("data-arg",id);
+    if(!SH.CultivationEngine.canBreakthrough(inst)||player.raw.yaodan<SH.CultivationEngine.breakthroughCost(inst.breakthrough)) brk.disabled=true;
+    row.appendChild(brk);
+    var evo=el("button","btn sm","进化"); evo.setAttribute("data-act","cult-evolve"); evo.setAttribute("data-arg",id);
+    if(!SH.CultivationEngine.canEvolve(inst)) evo.disabled=true;
+    row.appendChild(evo);
+    var tri=el("button","btn sm","渡劫（妖丹"+SH.CultivationEngine.tribulateCost(inst)+"）");
+    tri.setAttribute("data-act","cult-trib"); tri.setAttribute("data-arg",id);
+    if(!SH.CultivationEngine.canTribulate(inst)||player.raw.yaodan<SH.CultivationEngine.tribulateCost(inst)) tri.disabled=true;
+    row.appendChild(tri);
+    wrap.appendChild(row);
+
+    // 天赋
+    wrap.appendChild(el("div","muted","<br/>天赋点（"+SH.TalentEngine.allocated(inst)+" / "+SH.TalentEngine.talentCap(inst)+"）："));
+    var trow=el("div","row-flex"); trow.style.marginTop="6px";
+    [["ATTACK","攻击 +6%/层"],["DEFENSE","防御/生命 +6%/+4% 每层"],["SUPPORT","速度 +5%/层"]].forEach(function(b){
+      var layers=SH.TalentEngine.layersOf(inst,b[0]);
+      var tb=el("button","btn ghost sm",b[1]+"（"+layers+"/3）"); tb.setAttribute("data-act","cult-talent"); tb.setAttribute("data-arg",b[0]+"|"+id);
+      if(!SH.TalentEngine.canAssign(inst,b[0])) tb.disabled=true;
+      trow.appendChild(tb);
+    });
+    wrap.appendChild(trow);
+    return wrap;
+  }
+
+  // ═══════════ 7. 敕令（任务） ═══════════
+  function renderQuests(){
+    var p=el("div"); var panel=el("div","panel");
+    panel.appendChild(el("h2",null,"敕令 · 任务"));
+    var groups=[["DAILY","日常敕令"],["TRIAL","试炼敕令"],["ACHIEVEMENT","成就敕令"]];
+    groups.forEach(function(g){
+      var list=player.questStatus().filter(function(s){return s.def.cat===g[0];});
+      if(!list.length) return;
+      panel.appendChild(el("div","muted","<br/><b style='color:var(--jade-d)'>"+g[1]+"</b>"));
+      list.forEach(function(s){
+        var d=s.def;
+        var c=el("div","card"); c.style.textAlign="left";
+        var prog = s.current>=s.target?100:(d.obj.type==="CODEX_RATIO"?s.current:(s.current/s.target*100));
+        c.innerHTML='<div class="row-flex"><span class="name" style="font-size:15px">'+d.name+'</span>'+
+          '<span class="spacer"></span>'+(s.done?'<span class="badge b-ling">可领</span>':'<span class="pill">'+s.current+'/'+s.target+'</span>')+'</div>'+
+          '<div class="sub">'+d.obj.type+' · 奖励 '+d.reward.text+'</div>';
+        var bar=el("div","bar"); var i=el("i"); i.style.width=Math.min(100,prog)+"%"; bar.appendChild(i); c.appendChild(bar);
+        if(s.done && !s.claimed){
+          var cb=el("button","btn sm","领取"); cb.style.marginTop="8px"; cb.setAttribute("data-act","quest-claim"); cb.setAttribute("data-arg",d.id);
+          c.appendChild(cb);
+        } else if(s.claimed){ c.appendChild(el("div","muted","<span style='color:var(--r-ling)'>已领取 ✓</span>")); }
+        panel.appendChild(c);
+      });
+    });
+    p.appendChild(panel); return p;
+  }
+
+  // ═══════════ 8. 宗门（派系 / 据点 / 科技） ═══════════
+  function renderSect(){
+    var p=el("div"); var panel=el("div","panel");
+    panel.appendChild(el("h2",null,"宗门 · 据点 · 科技"));
+    // 派系
+    panel.appendChild(el("div","muted","<b style='color:var(--jade-d)'>归属道统：</b>"+(player.raw.faction?SH.FACTION_LABEL[player.raw.faction]:"未入宗")));
+    var frow=el("div","row-flex"); frow.style.marginTop="6px";
+    [["MAOSHAN","茅山"],["LONGHUSHAN","龙虎山"],["GEZAO","阁皂山"]].forEach(function(f){
+      var b=el("button","btn ghost sm",f[1]); b.setAttribute("data-act","sect-join"); b.setAttribute("data-arg",f[0]);
+      if(player.raw.faction===f[0]) b.disabled=true;
+      frow.appendChild(b);
+    });
+    panel.appendChild(frow);
+    // 据点
+    panel.appendChild(el("div","muted","<br/><b style='color:var(--jade-d)'>据点战（每日可占领 1 处，贡献 +50）：</b>"));
+    panel.appendChild(el("div","muted","当前贡献 <b>"+player.raw.contribution+"</b> · 已占 "+(player.raw.stronghold.ownedNode||"无")));
+    var today = new Date().toISOString().slice(0,10);
+    var sg=el("div","grid c2"); sg.style.marginTop="8px";
+    SH.LocationEngine.STRONGHOLD_NODES.forEach(function(node){
+      var can = SH.SocialEngine.canCapture(player.raw.stronghold, today);
+      var c=el("div","card");
+      c.innerHTML='<div class="name" style="font-size:15px">'+node+'</div>'+
+        '<div class="sub">'+(player.raw.stronghold.ownedNode===node?"已占据 ✓":(can?"可占领":"今日已占"))+'</div>';
+      if(can && player.raw.stronghold.ownedNode!==node){
+        var b=el("button","btn sm red","占领"); b.setAttribute("data-act","sect-capture"); b.setAttribute("data-arg",node);
+        c.appendChild(b);
+      }
+      sg.appendChild(c);
+    });
+    panel.appendChild(sg);
+    // 科技
+    panel.appendChild(el("div","muted","<br/><b style='color:var(--jade-d)'>宗门科技（消耗贡献研习）：</b>"));
+    var tg=el("div","grid c2"); tg.style.marginTop="8px";
+    SH.SectTechEngine.NODES.forEach(function(node){
+      var lv = player.raw.sectLevels[node.id]||0;
+      var can = SH.SectTechEngine.canResearch(node.id, player.raw.sectLevels, player.raw.faction, player.raw.contribution);
+      var cost = SH.SectTechEngine.researchCost(lv, node);
+      var c=el("div","card"); c.style.textAlign="left";
+      c.innerHTML='<div class="name" style="font-size:14px">'+node.name+' <span class="pill">Lv'+lv+'/'+node.maxLevel+'</span></div>'+
+        '<div class="sub">'+(node.faction?("专属·"+SH.FACTION_LABEL[node.faction]):"通用")+' · '+(cost===Infinity?"已满":("耗贡献 "+cost))+'</div>';
+      if(can){
+        var b=el("button","btn sm","研习"); b.setAttribute("data-act","sect-tech"); b.setAttribute("data-arg",node.id);
+        c.appendChild(b);
+      }
+      tg.appendChild(c);
+    });
+    panel.appendChild(tg);
+    p.appendChild(panel); return p;
+  }
+
+  // ═══════════ 9. 灵装（装备祭炼 + 炼妖融合） ═══════════
+  function equipTile(def){
+    var slotColor = ({WEAPON:"#b23a2e",ARMOR:"#2f6b5e",ACCESSORY:"#9b6bd0"})[def.slot]||"#999";
+    return '<span class="orb sm" style="background:'+slotColor+'">'+(def.name||"?").charAt(0)+'</span>';
+  }
+  function renderEquip(){
+    var p=el("div"); var panel=el("div","panel");
+    panel.appendChild(el("h2",null,"灵装 · 装备祭炼"));
+    var toggle=el("div","row-flex"); toggle.style.marginBottom="10px";
+    [["list","装备库"],["fuse","炼妖融合"]].forEach(function(o){
+      var b=el("button","btn sm "+(equipView===o[0]?"":"ghost"),o[1]);
+      b.setAttribute("data-act","equip-view"); b.setAttribute("data-arg",o[0]);
+      toggle.appendChild(b);
+    });
+    panel.appendChild(toggle);
+    if(equipView==="fuse") panel.appendChild(equipFuseView());
+    else if(equipSel) panel.appendChild(equipDetailView(equipSel));
+    else panel.appendChild(equipListPanel());
+    p.appendChild(panel); return p;
+  }
+  function equipListPanel(){
+    var wrap=el("div");
+    wrap.appendChild(el("div","muted","九件灵装随心祭炼。每件含主属性（随祭炼/突破/星级/元素亲和成长）与淬炼副属性；可披挂至妖之三槽（武器/护甲/饰品），加成直接计入妖之有效属性。"));
+    var grid=el("div","grid c3"); grid.style.marginTop="10px";
+    player.raw.equipment.forEach(function(oe){
+      var def=SH.equipDefById(oe.equipId);
+      var affin = def.element===null?"全属性通用":(elemLabel(def.element)+"亲和");
+      var c=el("div","card"); c.setAttribute("data-act","equip-detail"); c.setAttribute("data-arg",oe.instanceId);
+      c.innerHTML = equipTile(def)+
+        '<div class="name">'+def.name+'</div>'+
+        '<div class="sub"><span class="badge '+rarityClass(def.rarity)+'">'+rarityLabel(def.rarity)+'</span> '+SH.EQUIP_SLOT_LABEL[def.slot]+' · '+affin+'</div>'+
+        '<div class="sub">Lv'+oe.level+' · '+oe.stars+'★ · '+oe.tier+'突</div>';
+      grid.appendChild(c);
+    });
+    if(!player.raw.equipment.length) grid.appendChild(el("div","muted","尚无装备，完成收妖或祈妖后可获灵装。"));
+    wrap.appendChild(grid);
+    // 妖之披挂概览
+    wrap.appendChild(el("div","muted","<br/><b style='color:var(--jade-d)'>妖之披挂：</b>"));
+    var mg=el("div","grid c2"); mg.style.marginTop="6px";
+    player.ownedMonsterView().forEach(function(v){
+      var slots=player.raw.equipped[v.instance.instanceId]||{};
+      var names=["WEAPON","ARMOR","ACCESSORY"].filter(function(s){return slots[s];}).map(function(s){
+        return SH.EQUIP_SLOT_LABEL[s]+":"+SH.equipDefById(player.findEquip(slots[s]).equipId).name;
+      });
+      var c=el("div","card"); c.style.textAlign="left";
+      c.innerHTML='<div class="row-flex"><span class="name" style="font-size:15px">'+v.monster.name+'</span>'+
+        '<span class="spacer"></span><span class="pill">Lv'+v.instance.level+'</span></div>'+
+        '<div class="sub">'+(names.length?names.join(" ｜ "):"（未穿戴）")+'</div>';
+      mg.appendChild(c);
+    });
+    wrap.appendChild(mg);
+    return wrap;
+  }
+  function equipDetailView(eid){
+    var oe=player.findEquip(eid); if(!oe){ equipSel=null; return el("div"); }
+    var def=SH.equipDefById(oe.equipId);
+    var match = def.element!==null;
+    var wrap=el("div");
+    var back=el("div","btn ghost sm","← 返回装备库"); back.setAttribute("data-act","equip-back"); wrap.appendChild(back);
+    var head=el("div","row-flex"); head.style.margin="10px 0";
+    head.innerHTML=equipTile(def)+'<div><div class="name" style="font-size:18px">'+def.name+'</div>'+
+      '<span class="badge '+rarityClass(def.rarity)+'">'+rarityLabel(def.rarity)+'</span> '+
+      '<span class="pill">'+SH.EQUIP_SLOT_LABEL[def.slot]+'</span>'+
+      '<span class="pill">'+(def.element===null?"全属性通用":elemLabel(def.element)+"亲和")+'</span>'+
+      '<span class="pill">Lv'+oe.level+' / '+SH.EquipmentEngine.maxLevelOf(def,oe)+'</span>'+
+      '<span class="pill">'+oe.stars+'★</span><span class="pill">'+oe.tier+'突</span></div>';
+    wrap.appendChild(head);
+    // 主属性 + 副属性
+    var bon=SH.EquipmentEngine.bonus(oe,def,match);
+    var subTxt = oe.substats.length? oe.substats.map(function(s){return SH.EQUIP_STAT_LABEL[s.stat]+"+"+s.value;}).join("、") : "（无，可淬炼）";
+    var tbl=el("table","stat-tbl");
+    tbl.innerHTML="<tr><td>主属性 攻/防/命/速（"+(match?"元素亲和 ×1.2":"无亲和")+"）</td><td>"+bon.atk+" / "+bon.def+" / "+bon.hp+" / "+bon.spd+"</td></tr>"+
+      "<tr><td>淬炼副属性</td><td>"+subTxt+"</td></tr>";
+    wrap.appendChild(tbl);
+    // 五路径操作
+    wrap.appendChild(el("div","muted","<br/>五路径养成："));
+    var row=el("div","row-flex"); row.style.marginTop="6px"; row.style.flexWrap="wrap"; row.style.gap="6px";
+    var forge=el("button","btn sm","祭炼（妖丹-"+SH.EquipmentEngine.FORGE_COST_YAODAN+"）");
+    forge.setAttribute("data-act","equip-forge"); forge.setAttribute("data-arg",eid);
+    if(!SH.EquipmentEngine.canForge(oe)||player.raw.yaodan<SH.EquipmentEngine.FORGE_COST_YAODAN) forge.disabled=true;
+    row.appendChild(forge);
+    var star=el("button","btn sm","升星（灵玉-"+SH.EquipmentEngine.starCost(oe)+"）");
+    star.setAttribute("data-act","equip-star"); star.setAttribute("data-arg",eid);
+    if(!SH.EquipmentEngine.canStarUp(oe)||player.raw.lingyu<SH.EquipmentEngine.starCost(oe)) star.disabled=true;
+    row.appendChild(star);
+    var brk=el("button","btn sm","突破（灵玉-"+SH.EquipmentEngine.tierCost(oe)+"）");
+    brk.setAttribute("data-act","equip-break"); brk.setAttribute("data-arg",eid);
+    if(!SH.EquipmentEngine.canBreakthrough(oe,def)||player.raw.lingyu<SH.EquipmentEngine.tierCost(oe)) brk.disabled=true;
+    row.appendChild(brk);
+    var temp=el("button","btn sm","淬炼（灵玉-"+SH.EquipmentEngine.temperCost(oe)+"）");
+    temp.setAttribute("data-act","equip-temper"); temp.setAttribute("data-arg",eid);
+    if(!SH.EquipmentEngine.canTemper(oe)||player.raw.lingyu<SH.EquipmentEngine.temperCost(oe)) temp.disabled=true;
+    row.appendChild(temp);
+    wrap.appendChild(row);
+    // 穿戴到妖
+    wrap.appendChild(el("div","muted","<br/>披挂至妖（三槽各一件；同件不可同时穿两只）："));
+    var erow=el("div","row-flex"); erow.style.marginTop="6px";
+    var sel=el("select"); sel.id="equip-mon-sel";
+    player.ownedMonsterView().forEach(function(v){
+      var op=el("option"); op.value=v.instance.instanceId; op.textContent=v.monster.name+" Lv"+v.instance.level; sel.appendChild(op);
+    });
+    erow.appendChild(sel);
+    var eb=el("button","btn sm","披 挂"); eb.setAttribute("data-act","equip-do"); eb.setAttribute("data-arg",eid);
+    erow.appendChild(eb);
+    wrap.appendChild(erow);
+    // 选中妖的含装备有效属性
+    var monId = sel.value;
+    var ms = player.monsterStats(monId);
+    if(ms){
+      var eqb=ms.equipment;
+      var monName = SH.monsterById(player.raw.owned[monId].defId).name;
+      wrap.appendChild(el("div","muted","<br/>"+monName+" 含装备属性：养成 "+ms.cultivation.atk+"/"+ms.cultivation.def+"/"+ms.cultivation.hp+"/"+ms.cultivation.spd+
+        " ＋装备 +"+eqb.atk+"/+"+eqb.def+"/+"+eqb.hp+"/+"+eqb.spd+" ＝ 总计 "+ms.total.atk+"/"+ms.total.def+"/"+ms.total.hp+"/"+ms.total.spd));
+    }
+    return wrap;
+  }
+  function equipFuseView(){
+    var wrap=el("div");
+    wrap.appendChild(el("div","muted","炼妖融合：献祭两只妖，按配方/稀有度/基础属性熔铸新妖（耗妖丹 30，新等级=max+3 受上限约束，突破取两者较小，技能并集前四）。"));
+    var row=el("div","row-flex"); row.style.marginTop="10px";
+    var sa=el("select"); sa.id="fuse-a";
+    var sb=el("select"); sb.id="fuse-b";
+    player.ownedMonsterView().forEach(function(v){
+      var oa=el("option"); oa.value=v.instance.instanceId; oa.textContent=v.monster.name+" Lv"+v.instance.level; sa.appendChild(oa);
+      var ob=el("option"); ob.value=v.instance.instanceId; ob.textContent=v.monster.name+" Lv"+v.instance.level; sb.appendChild(ob);
+    });
+    if(player.ownedMonsterView().length>1) sb.selectedIndex=1;
+    row.appendChild(el("span",null,"献祭甲：")); row.appendChild(sa);
+    row.appendChild(el("span",null,"　献祭乙：")); row.appendChild(sb);
+    wrap.appendChild(row);
+    var fb=el("button","btn red","炼 妖 融 合"); fb.setAttribute("data-act","equip-fuse"); fb.style.marginTop="10px";
+    wrap.appendChild(fb);
+    wrap.appendChild(el("div","hint","示例配方：蛟 + 灵龟 → 玄武（镇北水德·跨界合体）。"));
+    return wrap;
+  }
+
+  // ═══════════ 事件委托 ═══════════
+  function onClick(e){
+    var t = e.target.closest("[data-act]");
+    if(!t) return;
+    var act = t.getAttribute("data-act");
+    var arg = t.getAttribute("data-arg");
+    switch(act){
+      case "tab": active=arg; render(); break;
+      case "goto-node": gotoNode(arg); break;
+    case "lbs-select": selectLbsNode(arg); break;
+    case "fuse-select-a": selectFuseA(arg); break;
+    case "fuse-select-b": selectFuseB(arg); break;
+    case "fuse-execute": doFuseDemo(); break;
+    case "fm-pick": fmPick(arg); break;
+    case "fm-clear": fmClear(); break;
+    case "fm-random": fmRandom(); break;
+    case "tal-select": talSelect(arg); break;
+    case "tal-invest": talInvest(arg); break;
+    case "tal-reset": talReset(); break;
+      case "gps-mode": mapState.gpsMode = t.value; if(mapState.node) gotoNode(mapState.node); else render(); break;
+      case "capture-start": startCapture(arg); break;
+      case "capture-tap": captureTap(); break;
+      case "capture-close": closeCapture(); break;
+      case "codex-detail": codexDetail=arg; render(); break;
+      case "codex-back": codexDetail=null; render(); break;
+      case "gacha-single": { var r=player.praySingle(Math.random); if(r.error){alert(r.error);break;} gachaResults=[mapGacha(r)]; render(); break; }
+      case "gacha-ten": { var rs=player.prayTen(Math.random); if(rs.error){alert(rs.error);break;} gachaResults=rs.map(mapGacha); render(); break; }
+      case "gacha-clear": gachaResults=[]; render(); break;
+      case "battle-new": startBattle(); break;
+      case "battle-weather": battleEnv.weather = t.value; break;
+      case "battle-terrain": battleEnv.terrain = t.value || null; break;
+      case "battle-skill": battleSkill(parseInt(arg,10)); break;
+      case "battle-back": battle=null; render(); break;
+      case "draft-ban-a": draftBanA(); break;
+      case "draft-pick-a": draftPickA(); break;
+      case "draft-gen-b": draftGenB(); break;
+      case "draft-pool": draftPool(arg); break;
+      case "draft-reset": draft=null; render(); break;
+      case "cult-select": cultSel = (arg===""?null:arg); render(); break;
+      case "cult-train": {
+        if(player.raw.yaodan<20){alert("妖丹不足");break;}
+        player.raw.yaodan-=20; player.gainExpTo(arg,120); render(); break;
+      }
+      case "cult-break": { var b=player.breakthrough(arg); if(b.error)alert(b.error); render(); break; }
+      case "cult-evolve": { var ev=player.evolve(arg); if(ev.error)alert(ev.error); render(); break; }
+      case "cult-trib": { var tr=player.tribulate(arg); if(tr.error)alert(tr.error); render(); break; }
+      case "cult-talent": { var parts=arg.split("|"); var ta=player.assignTalent(parts[1],parts[0]); if(ta.error)alert(ta.error); render(); break; }
+      case "quest-claim": { var q=player.claimQuest(arg); if(q.error){alert(q.error);break;} render(); break; }
+      case "sect-join": player.joinFaction(arg); render(); break;
+      case "sect-capture": {
+        var today=new Date().toISOString().slice(0,10);
+        var sc=player.captureStronghold(arg, today); if(sc.error)alert(sc.error); render(); break;
+      }
+      case "sect-tech": { var st=player.researchTech(arg); if(st.error)alert(st.error); render(); break; }
+      case "equip-view": equipView=arg; render(); break;
+      case "equip-detail": equipSel=arg; render(); break;
+      case "equip-back": { equipSel=null; render(); break; }
+      case "equip-forge": { var fz=player.forgeEquip(arg); if(fz.error)alert(fz.error); render(); break; }
+      case "equip-star": { var es=player.starUpEquip(arg); if(es.error)alert(es.error); render(); break; }
+      case "equip-break": { var eb2=player.breakthroughEquip(arg); if(eb2.error)alert(eb2.error); render(); break; }
+      case "equip-temper": { var et=player.temperEquip(arg); if(et.error)alert(et.error); render(); break; }
+      case "equip-do": {
+        var mid=$("equip-mon-sel").value;
+        var ed=player.equipTo(mid, arg); if(ed.error)alert(ed.error); render(); break;
+      }
+      case "dungeon-enter": {
+        var rw = player.enterDungeon(arg);
+        if(!rw){ alert("无法进入：香火不足或已达今日限次"); break; }
+        dungeonLog.push("通关「"+SH.DungeonEngine.Library.byId(arg).name+"」：妖丹+"+rw.yaodan+(rw.material?(" 材料+"+rw.material):"")+(rw.talisman?" 符纸✓":"")+(rw.skin?" 外观✓":"")+(rw.bossCaptured?" 收服妖王！":""));
+        render(); break;
+      }
+      case "secret-enter": {
+        var sr = player.enterSecretRealm();
+        if(!sr){ alert("无法入秘境：免费次数耗尽且香火不足"); break; }
+        secretResult = sr;
+        render(); break;
+      }
+      case "homestead-collect": {
+        var hr = player.collectHomestead(Date.now());
+        if(hr.incense>0||hr.pills>0) alert("收取成功：香火+"+hr.incense+" 妖丹+"+hr.pills+(hr.capped?"（已达12h封顶）":""));
+        else alert("暂无可收取产出（洞府刚启动计时或时间不足）");
+        render(); break;
+      }
+      case "homestead-upgrade": {
+        if(player.upgradeHomestead()) alert("阵法升至 Lv"+player.getHomesteadLevel()+"！攻击增益 +"+(player.homesteadAttackBonus()*100).toFixed(0)+"%");
+        else alert("妖丹不足，无法修缮阵法");
+        render(); break;
+      }
+      case "daily-reset": {
+        var today = new Date(Date.now()+86400000).toISOString().slice(0,10);
+        var trig = player.maybeResetDaily(today);
+        alert(trig ? "已执行跨天重置：秘境次数回满3、副本计数清空、疲劳归零、信誉+1、据点解除、商店重置" : "今日（"+today+"）已重置，未触发");
+        render(); break;
+      }
+      case "shop-buy": {
+        var today = new Date().toISOString().slice(0,10);
+        var r = player.buyIncense(today);
+        if(r.error){alert(r.error);break;}
+        alert("引妖香购买成功：灵玉-"+r.cost+" 香火+"+r.amount);
+        render(); break;
+      }
+      case "season-buy-pass": {
+        if(player.buySeasonPass()) alert("已激活赛季通行证！可领取付费轨道奖励");
+        else alert("灵玉不足（需 300），无法购买通行证");
+        render(); break;
+      }
+      case "season-claim-all": {
+        var res = player.claimAllSeason();
+        var cf=0, cp=0, ai=0, al=0, ay=0;
+        res.forEach(function(r){ if(r.claimedFree)cf++; if(r.claimedPaid)cp++; ai+=r.incense; al+=r.lingyu; ay+=r.yaodan; });
+        alert("领取完成：免费档+"+cf+" 付费档+"+cp+"（香火+"+ai+" 灵玉+"+al+" 妖丹+"+ay+"）");
+        render(); break;
+      }
+      case "season-addxp": {
+        player.addSeasonXp(SH.SeasonEngine.XP_CATCH);
+        alert("演练：收妖一次，赛季经验 +"+SH.SeasonEngine.XP_CATCH+"（当前 "+player.raw.seasonXp+"，已解锁档位 "+player.currentSeasonTier()+"）");
+        render(); break;
+      }
+      case "tutorial-step": {
+        var step = parseInt(arg,10);
+        var newStep = player.completeTutorialStep(step);
+        alert("已标记完成第 " + step + " 步（当前最高已完成：" + newStep + "）");
+        render(); break;
+      }
+      case "tutorial-skip": {
+        player.skipTutorial();
+        alert("已跳过全部引导，可自由探索");
+        render(); break;
+      }
+      case "signin-do": {
+        var r = player.doSignIn();
+        alert("签到成功！第 " + r.signInDay + " 天 · 香火 +" + r.reward + "（封顶 70）");
+        render(); break;
+      }
+      case "equip-fuse": {
+        var fa=$("fuse-a").value, fbv=$("fuse-b").value;
+        var fr=player.fuseMonsters(fa,fbv);
+        if(fr.error){alert(fr.error);break;}
+        alert("融合成功！凝成 "+SH.monsterById(fr.plan.newDefId).name+" Lv"+fr.plan.newLevel+"（突破"+fr.plan.newBreakthrough+"）");
+        render(); break;
+      }
+    }
+  }
+  function mapGacha(r){
+    return { monster:r.monster, rarity:r.result.rarity, duplicate:r.duplicate, yaodanGain:r.yaodanGain };
+  }
+
+  document.addEventListener("click", onClick);
+  render();
+  </script>
+</body>
+</html>
