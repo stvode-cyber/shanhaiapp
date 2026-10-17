@@ -27,6 +27,9 @@ fun SectScreen(modifier: Modifier = Modifier) {
         Spacer(Modifier.height(8.dp))
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            if (nodes.isEmpty()) {
+                item { EmptyState("🏯", "宗门科技树暂无节点") }
+            }
             items(nodes) { n ->
                 val lv = levels[n.id] ?: 0
                 val canResearch = SectTechEngine.canResearch(n.id, levels, null, contribution = Int.MAX_VALUE)

@@ -85,6 +85,7 @@ fun DungeonScreen(modifier: Modifier = Modifier) {
             confirmButton = {
                 Button(onClick = {
                     lastReward = DungeonEngine.enter(d, runState.value) { defaultRandom() }
+                    runState.value = runState.value.copy()  // 强制重组：MutableMap 内部变化不触发 Compose
                     selected = null
                 }) { Text("确认进入") }
             },

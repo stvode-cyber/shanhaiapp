@@ -57,6 +57,6 @@ fun FuseScreen(modifier: Modifier = Modifier) {
                     Text("等级：${p.newLevel} · 突破：${p.newBreakthrough}", fontSize = 14.sp)
                 }
             }
-        } ?: Text("无可用配方", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } ?: EmptyState("⚗️", "当前组合无可用配方")
     }
 }

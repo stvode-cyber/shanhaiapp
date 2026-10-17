@@ -12,6 +12,7 @@ import com.shanhai.core.data.MonsterPool
 import com.shanhai.core.logic.TalentEngine
 import com.shanhai.core.model.MonsterInstance
 import com.shanhai.core.model.TalentBranch
+import com.shanhai.yaozhi.components.EmptyState
 
 @Composable
 fun TalentScreen(modifier: Modifier = Modifier) {
@@ -27,7 +28,11 @@ fun TalentScreen(modifier: Modifier = Modifier) {
         Text("已分配：$alloc / 上限：$cap", fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-        TalentBranch.values().forEach { branch ->
+        val branches = TalentBranch.values()
+        if (branches.isEmpty()) {
+            EmptyState("✨", "暂无天赋分支")
+        }
+        branches.forEach { branch ->
             val layers = TalentEngine.layersOf(inst, branch)
             val canAdd = TalentEngine.canAssign(inst, branch)
             val label = when (branch) {
