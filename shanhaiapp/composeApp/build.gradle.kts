@@ -23,12 +23,10 @@ android {
     }
     signingConfigs {
         create("release") {
-            // TODO(生产发布): 替换为真实 keystore 路径 + 密码
-            // 暂时复用 debug keystore，等正式发布时用 keytool -genkeypair 生成
-            storeFile = file("../keystores/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+            storeFile = file("../keystores/release.keystore")
+            storePassword = "ShanhaiRelease2026!Secure#7kP3"
+            keyAlias = "shanhaiapp"
+            keyPassword = "ShanhaiRelease2026!Secure#7kP3"
         }
     }
     buildTypes {

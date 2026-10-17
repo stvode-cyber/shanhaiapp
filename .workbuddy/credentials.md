@@ -20,7 +20,7 @@
 | 文件 | 路径 | 密码/说明 |
 |------|------|----------|
 | **debug keystore** | `shanhaiapp\keystores\debug.keystore` | 默认: `android` / `android` |
-| **release keystore** | ⚠️ **未创建** | 需在 **C:\temp 干净路径**下用 keytool 生成，禁止在中文路径操作 |
+| **release keystore** | `shanhaiapp\keystores\release.keystore` | **Store/Key Pass: `ShanhaiRelease2026!Secure#7kP3`** / alias: `shanhaiapp` / 类型 PKCS12 / RSA 2048 / 有效期 2026-10-18 → 2051-10-18（25年）/ DN: `CN=ShanhaiYaozhi, OU=Dev, O=Shanhai, L=Beijing, ST=Beijing, C=CN` / SHA-256: `1387ee48d3fe3b4442f6027dc1aec74debf19fe68c680696a68c3708cc243423` |
 | **local.properties** | `shanhaiapp\local.properties` | 需手动填 `sdk.dir=C\:\\Users\\Administrator\\Android\\Sdk`，已被 .gitignore 排除 |
 
 ## 三、零 KEY 终态确认
