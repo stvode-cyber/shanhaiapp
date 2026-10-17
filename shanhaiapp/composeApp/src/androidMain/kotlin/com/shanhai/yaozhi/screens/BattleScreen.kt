@@ -17,9 +17,12 @@ import com.shanhai.core.data.MonsterPool
 import com.shanhai.core.logic.BattleEngine
 import com.shanhai.core.logic.Combatant
 import com.shanhai.core.logic.DamageResult
+import com.shanhai.core.logic.FormationTemplate
+import com.shanhai.core.logic.FormationTemplates
 import com.shanhai.core.model.MonsterCategory
 import com.shanhai.core.model.Rarity
 import com.shanhai.core.model.Stats
+import com.shanhai.yaozhi.LocalGameState
 import com.shanhai.yaozhi.theme.QingDai
 import com.shanhai.yaozhi.theme.ZhuSha
 import kotlin.random.Random
@@ -27,16 +30,19 @@ import kotlin.random.Random
 /**
  * 试炼对战 · V1
  * 我方妖 vs 敌方妖，回合制，每回合自动选最优克制技。
- * 调 BattleEngine.damage() 算伤害。
+ * 新增：流派模板一键套用（攻/防/辅三预设）
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BattleScreen(modifier: Modifier = Modifier) {
+    val gs = LocalGameState.current
     val pool = remember { MonsterPool.all }
     var myCombatant by remember { mutableStateOf(buildCombatant(pool[0], level = 5)) }
     var enemyCombatant by remember { mutableStateOf(buildCombatant(pool[3], level = 5)) }
     var battleLog by remember { mutableStateOf(listOf("战斗开始！")) }
     var isPlayerTurn by remember { mutableStateOf(true) }
     var gameOver by remember { mutableStateOf(false) }
+    var showTemplateDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -44,7 +50,15 @@ fun BattleScreen(modifier: Modifier = Modifier) {
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        Text("试炼对战", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Row(horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()) {
+            Text("试炼对战", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            OutlinedButton(onClick = { showTemplateDialog = true }) {
+                Text("流派模板", fontSize = 12.sp)
+            }
+        }
+        Text("当前流派：${gs.currentFormation?.label ?: "未选"}", fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
 
         // 对战双方
@@ -90,7 +104,6 @@ fun BattleScreen(modifier: Modifier = Modifier) {
             Button(
                 onClick = {
                     if (!isPlayerTurn) return@Button
-                    // 我方行动
                     val mySkill = BattleEngine.bestCounterSkill(myCombatant, enemyCombatant)
                         ?: myCombatant.equippedSkills.firstOrNull() ?: return@Button
                     val dmg = BattleEngine.damage(myCombatant, enemyCombatant, mySkill)
@@ -113,7 +126,6 @@ fun BattleScreen(modifier: Modifier = Modifier) {
 
             Spacer(Modifier.height(8.dp))
 
-            // 敌方回合自动
             LaunchedEffect(isPlayerTurn) {
                 if (!isPlayerTurn && !gameOver) {
                     kotlinx.coroutines.delay(800)
@@ -150,6 +162,46 @@ fun BattleScreen(modifier: Modifier = Modifier) {
                 ) { Text("再来一局") }
             }
         }
+    }
+
+    // 流派模板弹窗
+    if (showTemplateDialog) {
+        AlertDialog(
+            onDismissRequest = { showTemplateDialog = false },
+            title = { Text("流派模板 · 一键套用") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("选择后，每只妖将按流派自动推荐 4 个出战技能：", fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    for (tpl in FormationTemplate.values()) {
+                        Surface(shape = RoundedCornerShape(8.dp),
+                            color = if (gs.currentFormation == tpl)
+                                MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.fillMaxWidth()) {
+                            Row(modifier = Modifier.padding(12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween) {
+                                Column {
+                                    Text(tpl.label, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                    Text(tpl.desc, fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Button(onClick = {
+                                    gs.currentFormation = tpl
+                                    showTemplateDialog = false
+                                }, modifier = Modifier.align(Alignment.CenterVertically)) {
+                                    Text("套用", fontSize = 12.sp)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showTemplateDialog = false }) { Text("取消") }
+            }
+        )
     }
 }
 

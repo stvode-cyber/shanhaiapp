@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shanhai.core.data.MonsterPool
 import com.shanhai.core.logic.Codex
+import com.shanhai.core.logic.GameState
 import com.shanhai.core.platform.OsmBootstrap
 import com.shanhai.yaozhi.screens.*
 import com.shanhai.yaozhi.theme.ShanhaiTheme
@@ -34,10 +35,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         OsmBootstrap.init(this)
         val codex = Codex(MonsterPool.all)
+        val gs = GameState()
         setContent {
             ShanhaiTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    GameRoot(codex = codex)
+                    GameStateProvider(gs) {
+                        GameRoot(codex = codex)
+                    }
                 }
             }
         }
@@ -154,7 +158,7 @@ private fun AboutScreen(codex: Codex, modifier: Modifier) {
         Text("引擎健康度", fontSize = 18.sp, fontWeight = FontWeight.Medium)
         AboutRow("MonsterPool", "${MonsterPool.all.size} 妖")
         AboutRow("Codex", "${codex.regionTotal()} 妖 · 已获 ${codex.regionCaught()}")
-        AboutRow("验证链", "706/706 + 75/75 + 30/30")
+        AboutRow("验证链", "706/706 + 75/75 + 37/37")
         HorizontalDivider()
         Text("5 核心功能 ✅", fontSize = 16.sp, fontWeight = FontWeight.Medium)
         AboutRow("① 巡妖收妖", "MapScreen + CaptureEngine")
@@ -166,7 +170,7 @@ private fun AboutScreen(codex: Codex, modifier: Modifier) {
         Text("引擎层 ✅", fontSize = 16.sp, fontWeight = FontWeight.Medium)
         AboutRow("21 引擎", "shared KMP 全量")
         AboutRow("Android 壳", "Jetpack Compose + osmdroid")
-        AboutRow("验证", "jvmTest 30/30 + JS 706/706")
+        AboutRow("验证", "jvmTest 37/37 + JS 706/706")
     }
 }
 
