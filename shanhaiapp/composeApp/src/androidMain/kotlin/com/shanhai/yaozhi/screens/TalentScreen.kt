@@ -1,7 +1,6 @@
 package com.shanhai.yaozhi.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,7 +35,7 @@ fun TalentScreen(modifier: Modifier = Modifier) {
                 TalentBranch.DEFENSE -> "防御分支"
                 TalentBranch.SUPPORT -> "辅助分支"
             }
-            Surface(shape = RoundedCornerShape(10.dp), tonalElevation = 1.dp,
+            Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 1.dp,
                 modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier.padding(12.dp).fillMaxWidth(),

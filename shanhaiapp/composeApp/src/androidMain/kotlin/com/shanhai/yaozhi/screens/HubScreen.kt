@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -86,7 +87,7 @@ private fun HubEntry(item: HubItem, onClick: () -> Unit) {
 /** 次级入口枚举，与 MainActivity 的 Tab 一一对应 */
 enum class HubItem(val label: String, val icon: ImageVector) {
     MAP("巡妖", Icons.Filled.Place),
-    CODEX("妖典", Icons.Filled.MenuBook),
+    CODEX("妖典", Icons.AutoMirrored.Filled.MenuBook),
     BATTLE("试炼", Icons.Filled.SportsEsports),
     DUNGEON("副本", Icons.Filled.Castle),
     CULTIVATE("养成", Icons.Filled.AutoAwesome),
@@ -94,7 +95,7 @@ enum class HubItem(val label: String, val icon: ImageVector) {
     FUSE("融合", Icons.Filled.Merge),
     TALENT("天赋", Icons.Filled.Star),
     STORE("商店", Icons.Filled.ShoppingCart),
-    QUESTS("敕令", Icons.Filled.Assignment),
+    QUESTS("敕令", Icons.AutoMirrored.Filled.Assignment),
     SECRET("秘境", Icons.Filled.Nature),
     HOMESTEAD("家园", Icons.Filled.Home),
     SECT("宗门", Icons.Filled.Groups),

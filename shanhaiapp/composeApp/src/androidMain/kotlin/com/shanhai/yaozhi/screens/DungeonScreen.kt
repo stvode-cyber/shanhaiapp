@@ -3,7 +3,6 @@ package com.shanhai.yaozhi.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,6 +15,7 @@ import com.shanhai.core.logic.DungeonDef
 import com.shanhai.core.logic.DungeonEngine
 import com.shanhai.core.logic.DungeonLibrary
 import com.shanhai.core.logic.DungeonType
+import com.shanhai.yaozhi.components.EmptyState
 
 @Composable
 fun DungeonScreen(modifier: Modifier = Modifier) {
@@ -29,12 +29,20 @@ fun DungeonScreen(modifier: Modifier = Modifier) {
         Text("副本妖境", fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
 
+        val listEmpty = grouped.values.all { it.isEmpty() }
+        if (listEmpty) {
+            EmptyState("📜", "当前没有可用副本")
+        }
+
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             grouped.forEach { (type: DungeonType, list: List<DungeonDef>) ->
+                if (list.isEmpty()) return@forEach
                 item { Text(type.label, fontSize = 14.sp, fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary) }
                 items(list) { d ->
-                    Surface(shape = RoundedCornerShape(10.dp), tonalElevation = 1.dp,
+                    val usedToday = runState.value.enteredToday[d.id] ?: 0
+                    val remaining = d.dailyLimit - usedToday
+                    Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 1.dp,
                         modifier = Modifier.fillMaxWidth()) {
                         Row(modifier = Modifier.padding(12.dp).fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -43,11 +51,12 @@ fun DungeonScreen(modifier: Modifier = Modifier) {
                                 Text(d.name, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                                 Text(d.desc, fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text("消耗 ${d.costIncense} 香火 · 限 ${d.dailyLimit} 次", fontSize = 12.sp)
+                                Text("消耗 ${d.costIncense} 香火 · 今日剩余 $remaining/${d.dailyLimit}", fontSize = 12.sp)
                             }
                             Button(onClick = { selected = d },
+                                enabled = remaining > 0,
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)) {
-                                Text("进入", fontSize = 12.sp)
+                                Text(if (remaining > 0) "进入" else "已用完", fontSize = 12.sp)
                             }
                         }
                     }

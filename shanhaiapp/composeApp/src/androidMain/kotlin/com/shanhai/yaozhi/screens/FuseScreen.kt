@@ -1,9 +1,9 @@
 package com.shanhai.yaozhi.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.sp
 import com.shanhai.core.data.MonsterPool
 import com.shanhai.core.logic.FusionEngine
 import com.shanhai.core.model.MonsterInstance
+import com.shanhai.yaozhi.components.EmptyState
 
 @Composable
 fun FuseScreen(modifier: Modifier = Modifier) {
@@ -29,7 +30,7 @@ fun FuseScreen(modifier: Modifier = Modifier) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Column(Modifier.weight(1f)) {
                 val aDef = MonsterPool.all.first { it.id == instA.defId }
-                Surface(shape = RoundedCornerShape(10.dp), tonalElevation = 2.dp,
+                Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 2.dp,
                     modifier = Modifier.fillMaxWidth()) {
                     Text("A: ${aDef.name}", modifier = Modifier.padding(12.dp), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
@@ -37,7 +38,7 @@ fun FuseScreen(modifier: Modifier = Modifier) {
             Text("+", fontSize = 24.sp, modifier = Modifier.align(androidx.compose.ui.Alignment.CenterVertically))
             Column(Modifier.weight(1f)) {
                 val bDef = MonsterPool.all.first { it.id == instB.defId }
-                Surface(shape = RoundedCornerShape(10.dp), tonalElevation = 2.dp,
+                Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 2.dp,
                     modifier = Modifier.fillMaxWidth()) {
                     Text("B: ${bDef.name}", modifier = Modifier.padding(12.dp), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
@@ -49,7 +50,7 @@ fun FuseScreen(modifier: Modifier = Modifier) {
         plan?.let { p ->
             val newDef = MonsterPool.byId(p.newDefId)
             Text("融合预览", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-            Surface(shape = RoundedCornerShape(10.dp), color = MaterialTheme.colorScheme.surfaceVariant,
+            Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("产出：${newDef?.name ?: "未知"}", fontSize = 16.sp, fontWeight = FontWeight.Bold)

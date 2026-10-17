@@ -1,7 +1,6 @@
 package com.shanhai.yaozhi.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -9,6 +8,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shanhai.core.data.EquipmentLibrary
+import com.shanhai.yaozhi.components.EmptyState
 
 @Composable
 fun EquipScreen(modifier: Modifier = Modifier) {
@@ -16,8 +16,11 @@ fun EquipScreen(modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
         Text("装备库（${equips.size} 件）", fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp))
+        if (equips.isEmpty()) {
+            EmptyState("🛡️", "暂无装备")
+        }
         equips.forEach { eq ->
-            Surface(shape = RoundedCornerShape(10.dp), tonalElevation = 1.dp,
+            Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 1.dp,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                 Row(modifier = Modifier.padding(12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween) {

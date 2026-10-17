@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -46,7 +47,7 @@ class MainActivity : ComponentActivity() {
 /** 底部 5 核心 tab */
 private enum class CoreTab(val label: String, val icon: ImageVector) {
     MAP("巡妖", Icons.Filled.Place),
-    CODEX("妖典", Icons.Filled.MenuBook),
+    CODEX("妖典", Icons.AutoMirrored.Filled.MenuBook),
     BATTLE("试炼", Icons.Filled.SportsEsports),
     DUNGEON("副本", Icons.Filled.Castle),
     HUB("我的", Icons.Filled.Person),

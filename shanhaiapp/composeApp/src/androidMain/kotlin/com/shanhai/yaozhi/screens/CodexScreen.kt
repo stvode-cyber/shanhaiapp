@@ -23,6 +23,7 @@ import com.shanhai.core.logic.Codex
 import com.shanhai.core.model.Monster
 import com.shanhai.core.model.MonsterCategory
 import com.shanhai.core.model.Rarity
+import com.shanhai.yaozhi.components.EmptyState
 
 /**
  * 妖典图鉴 · V1
@@ -105,14 +106,18 @@ fun CodexScreen(codex: Codex, modifier: Modifier = Modifier) {
         Spacer(Modifier.height(8.dp))
 
         // 列表
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(filtered, key = { it.id }) { monster ->
-                MonsterCard(monster, codex.snapshotRegion().contains(monster.id)) {
-                    selectedMonster = monster
+        if (filtered.isEmpty()) {
+            EmptyState("🔍", "没有符合筛选条件的妖")
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(filtered, key = { it.id }) { monster ->
+                    MonsterCard(monster, codex.snapshotRegion().contains(monster.id)) {
+                        selectedMonster = monster
+                    }
                 }
             }
         }
