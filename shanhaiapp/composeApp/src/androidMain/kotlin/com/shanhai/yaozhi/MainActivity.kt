@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         OsmBootstrap.init(this)
         val codex = Codex(MonsterPool.all)
-        val gs = GameState()
+        val gs = loadInitialGameState(this)  // 从 SharedPreferences 读档；没有则空 GameState()
         setContent {
             ShanhaiTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
@@ -124,7 +124,7 @@ private fun GameRoot(codex: Codex) {
                     modifier = Modifier.padding(padding).fillMaxSize())
                 HubItem.ACTIVITY -> ActivityScreen(
                     modifier = Modifier.padding(padding).fillMaxSize())
-                HubItem.ABOUT -> AboutScreen(codex,
+                HubItem.ABOUT -> AboutScreen(
                     modifier = Modifier.padding(padding).fillMaxSize())
 
                 // HUB tab 本身
@@ -144,33 +144,85 @@ private fun CoreTab.toHubItem(): HubItem? = when (this) {
     CoreTab.HUB -> null  // null = 显示 HubScreen
 }
 
-/** AboutScreen 升级到 v0.4.0 */
+/** AboutScreen · 版本信息 + 存档管理 */
 @Composable
-private fun AboutScreen(codex: Codex, modifier: Modifier) {
+private fun AboutScreen(modifier: Modifier) {
+    val gsState = LocalGameState.current
+    val versionState = LocalGsVersion.current
+    val _v = versionState.value  // 订阅 → 存档操作后刷新时间戳
+    val gs = gsState.value
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val mgr = remember(context) { SaveManager(context.applicationContext) }
+
     Column(
         modifier = modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text("山海妖志 · v0.4.0", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        Text("V1→V4 全量 18 Screen 已交付", fontSize = 14.sp,
+        Text("19/19 Screen 已接 GameState ✅", fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
+
         HorizontalDivider()
+
+        // 📦 存档管理
+        Text("📦 存档管理", fontSize = 18.sp, fontWeight = FontWeight.Medium)
+        val lastTs = mgr.lastSaveTs()
+        val lastSaveText = if (lastTs > 0)
+            java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.CHINA)
+                .format(java.util.Date(lastTs))
+        else "从未存档"
+        Text("最后存档：$lastSaveText", fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(
+                onClick = {
+                    val ts = mgr.save(gs.toSaveData())
+                    // 触发一下重组刷新时间戳（读时间戳是 remember 缓存的，必须 bump version）
+                    gsState.mutate(versionState) { it }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("立即存档") }
+
+            OutlinedButton(
+                onClick = {
+                    val loaded = mgr.load()
+                    if (loaded != null) {
+                        gsState.mutate(versionState) { it.applySaveData(loaded) }
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("读档") }
+        }
+
+        OutlinedButton(
+            onClick = {
+                mgr.reset()
+                gsState.mutate(versionState) { GameState().apply { } }
+            },
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.error
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("⚠️ 清空存档（不可恢复）") }
+
+        HorizontalDivider()
+
+        // 引擎健康度
         Text("引擎健康度", fontSize = 18.sp, fontWeight = FontWeight.Medium)
         AboutRow("MonsterPool", "${MonsterPool.all.size} 妖")
-        AboutRow("Codex", "${codex.regionTotal()} 妖 · 已获 ${codex.regionCaught()}")
+        AboutRow("Codex", "${gs.codex.regionTotal()} 妖 · 已获 ${gs.codex.regionCaught()}")
         AboutRow("验证链", "706/706 + 75/75 + 37/37")
         HorizontalDivider()
-        Text("5 核心功能 ✅", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-        AboutRow("① 巡妖收妖", "MapScreen + CaptureEngine")
-        AboutRow("② 妖典图鉴", "CodexScreen 筛选+详情")
-        AboutRow("③ 试炼对战", "BattleScreen 回合制")
-        AboutRow("④ 副本妖境", "DungeonScreen 四类副本")
-        AboutRow("⑤ 全部功能", "HubScreen 16 次级入口")
+        Text("资源", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        AboutRow("灵玉", "${gs.lingyu}")
+        AboutRow("妖丹", "${gs.yaodan}")
+        AboutRow("香火", "${gs.incense}")
         HorizontalDivider()
-        Text("引擎层 ✅", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        Text("引擎层", fontSize = 16.sp, fontWeight = FontWeight.Medium)
         AboutRow("21 引擎", "shared KMP 全量")
         AboutRow("Android 壳", "Jetpack Compose + osmdroid")
-        AboutRow("验证", "jvmTest 37/37 + JS 706/706")
+        AboutRow("存档", "SharedPreferences + JSON 序列化")
     }
 }
 

@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 android {
     namespace = "com.shanhai.yaozhi"
@@ -51,6 +52,7 @@ kotlin {
                 implementation(project(":shared"))
                 implementation(libs.coreKtx)
                 implementation(libs.coroutines)
+                implementation(libs.serializationJson)
                 // Compose BOM
                 implementation(platform("androidx.compose:compose-bom:2024.09.03"))
                 implementation("androidx.compose.ui:ui")
