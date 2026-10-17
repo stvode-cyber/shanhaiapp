@@ -8,15 +8,19 @@ enum class Element(val label: String) {
     METAL("金"), WOOD("木"), EARTH("土"), WATER("水"), FIRE("火"), WIND("风"), THUNDER("雷");
 
     companion object {
-        /** 攻方克制受方的集合（行=攻方，列=受方） */
+        /**
+         * 攻方克制受方的集合（行=攻方，列=受方）。
+         * GDD 附录矩阵（攻方克受方 ×1.6）：
+         *   金→木风  木→土雷  土→水风  水→火雷  火→金风  风→土雷  雷→木水
+         */
         private val BEATS: Map<Element, Set<Element>> = mapOf(
-            METAL to setOf(WOOD, WIND),
-            WOOD to setOf(EARTH, FIRE),
-            EARTH to setOf(WATER, THUNDER),
-            WATER to setOf(FIRE, METAL),
-            FIRE to setOf(METAL, WIND),
-            WIND to setOf(EARTH, THUNDER),
-            THUNDER to setOf(WOOD, WATER),
+            METAL to setOf(WOOD, WIND),       // 金克木、风
+            WOOD to setOf(EARTH, THUNDER),   // 木克土、雷
+            EARTH to setOf(WATER, WIND),     // 土克水、风
+            WATER to setOf(FIRE, THUNDER),   // 水克火、雷
+            FIRE to setOf(METAL, WIND),      // 火克金、风
+            WIND to setOf(EARTH, THUNDER),   // 风克土、雷
+            THUNDER to setOf(WOOD, WATER),   // 雷克木、水
         )
 
         /** 攻方是否克制受方 */
