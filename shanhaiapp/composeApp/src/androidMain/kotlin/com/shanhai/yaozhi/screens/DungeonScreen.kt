@@ -15,10 +15,17 @@ import com.shanhai.core.logic.DungeonDef
 import com.shanhai.core.logic.DungeonEngine
 import com.shanhai.core.logic.DungeonLibrary
 import com.shanhai.core.logic.DungeonType
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
+import com.shanhai.yaozhi.mutate
 import com.shanhai.yaozhi.components.EmptyState
 
 @Composable
 fun DungeonScreen(modifier: Modifier = Modifier) {
+    val gsState = LocalGameState.current
+    val versionState = LocalGsVersion.current
+    val _v = versionState.value  // 订阅 → mutate 后必重组
+    val gs = gsState.value
     val all = remember { DungeonLibrary.all }
     val grouped = remember(all) { all.groupBy { d: DungeonDef -> d.type } }
     var selected by remember { mutableStateOf<DungeonDef?>(null) }
@@ -27,6 +34,8 @@ fun DungeonScreen(modifier: Modifier = Modifier) {
 
     Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
         Text("副本妖境", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("香火：${gs.incense} ｜ 妖丹：${gs.yaodan}", fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(8.dp))
 
         val listEmpty = grouped.values.all { it.isEmpty() }
@@ -84,10 +93,21 @@ fun DungeonScreen(modifier: Modifier = Modifier) {
             },
             confirmButton = {
                 Button(onClick = {
-                    lastReward = DungeonEngine.enter(d, runState.value) { defaultRandom() }
-                    runState.value = runState.value.copy()  // 强制重组：MutableMap 内部变化不触发 Compose
+                    val def = d!!
+                    // 先扣 gs 香火
+                    gsState.mutate(versionState) { gs ->
+                        if (gs.incense >= def.costIncense) gs.incense -= def.costIncense
+                    }
+                    // 再跑副本
+                    val reward = DungeonEngine.enter(def, runState.value) { defaultRandom() }
+                    runState.value = runState.value.copy()
+                    // 妖丹奖励写回 gs
+                    gsState.mutate(versionState) { gs ->
+                        gs.yaodan += reward.yaodan
+                    }
+                    lastReward = reward
                     selected = null
-                }) { Text("确认进入") }
+                }, enabled = gs.incense >= d.costIncense) { Text("确认进入（-${d.costIncense} 香火）") }
             },
             dismissButton = { OutlinedButton(onClick = { selected = null }) { Text("取消") } }
         )

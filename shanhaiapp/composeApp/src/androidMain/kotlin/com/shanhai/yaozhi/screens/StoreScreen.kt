@@ -15,6 +15,7 @@ import com.shanhai.core.data.MonsterPool
 import com.shanhai.core.logic.GachaEngine
 import com.shanhai.core.model.Rarity
 import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 import com.shanhai.yaozhi.mutate
 
 /**
@@ -27,6 +28,8 @@ import com.shanhai.yaozhi.mutate
 @Composable
 fun StoreScreen(modifier: Modifier = Modifier) {
     val gsState = LocalGameState.current
+    val versionState = LocalGsVersion.current
+    val _v = versionState.value  // 订阅 → mutate 后必重组
     val gs = gsState.value  // Compose 自动订阅变化
     var selectedTab by remember { mutableIntStateOf(0) }
 
@@ -49,9 +52,9 @@ fun StoreScreen(modifier: Modifier = Modifier) {
         Spacer(Modifier.height(12.dp))
 
         when (selectedTab) {
-            0 -> IncenseTab(gsState)
-            1 -> GachaTab(gsState, GachaEngine.PoolType.NORMAL)
-            2 -> GachaTab(gsState, GachaEngine.PoolType.LIMITED)
+            0 -> IncenseTab(gsState, versionState)
+            1 -> GachaTab(gsState, versionState, GachaEngine.PoolType.NORMAL)
+            2 -> GachaTab(gsState, versionState, GachaEngine.PoolType.LIMITED)
         }
     }
 }
@@ -59,7 +62,10 @@ fun StoreScreen(modifier: Modifier = Modifier) {
 // ── Tab 0：引妖香 ──
 
 @Composable
-private fun IncenseTab(gsState: androidx.compose.runtime.MutableState<com.shanhai.core.logic.GameState>) {
+private fun IncenseTab(
+    gsState: androidx.compose.runtime.MutableState<com.shanhai.core.logic.GameState>,
+    versionState: androidx.compose.runtime.MutableState<Long>,
+) {
     val gs = gsState.value
     val cost = com.shanhai.core.logic.ShopEngine.INCENSE_REFILL_COST_LINGYU
     val amount = com.shanhai.core.logic.ShopEngine.INCENSE_REFILL_AMOUNT
@@ -77,7 +83,7 @@ private fun IncenseTab(gsState: androidx.compose.runtime.MutableState<com.shanha
                 Button(
                     onClick = {
                         val today = java.time.LocalDate.now().toString()
-                        gsState.mutate { it.buyIncense(today) }
+                        gsState.mutate(versionState) { it.buyIncense(today) }
                     },
                     enabled = gs.lingyu >= cost && gs.shopIncenseBought < cap,
                     modifier = Modifier.fillMaxWidth()
@@ -90,8 +96,11 @@ private fun IncenseTab(gsState: androidx.compose.runtime.MutableState<com.shanha
 // ── Tab 1/2：祈妖抽卡（通用 / 限定） ──
 
 @Composable
-private fun GachaTab(gsState: androidx.compose.runtime.MutableState<com.shanhai.core.logic.GameState>,
-                     pool: GachaEngine.PoolType) {
+private fun GachaTab(
+    gsState: androidx.compose.runtime.MutableState<com.shanhai.core.logic.GameState>,
+    versionState: androidx.compose.runtime.MutableState<Long>,
+    pool: GachaEngine.PoolType,
+) {
     val gs = gsState.value
     val isLimited = pool == GachaEngine.PoolType.LIMITED
     val hardLimit = if (isLimited) GachaEngine.LIMITED_HARD_PITY else GachaEngine.NORMAL_HARD_PITY
@@ -126,13 +135,13 @@ private fun GachaTab(gsState: androidx.compose.runtime.MutableState<com.shanhai.
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.fillMaxWidth()) {
             Button(onClick = {
-                lastResult = gsState.mutate { it.pullGacha(ten = false, pool = pool) }
+                lastResult = gsState.mutate(versionState) { it.pullGacha(ten = false, pool = pool) }
             }, enabled = gs.lingyu >= GachaEngine.SINGLE_LINGYU,
                 modifier = Modifier.weight(1f).height(48.dp)) {
                 Text("单抽 -${GachaEngine.SINGLE_LINGYU}")
             }
             Button(onClick = {
-                lastResult = gsState.mutate { it.pullGacha(ten = true, pool = pool) }
+                lastResult = gsState.mutate(versionState) { it.pullGacha(ten = true, pool = pool) }
             }, enabled = gs.lingyu >= GachaEngine.TEN_LINGYU,
                 modifier = Modifier.weight(1f).height(48.dp)) {
                 Text("十连 -${GachaEngine.TEN_LINGYU}")
@@ -165,3 +174,4 @@ private fun GachaTab(gsState: androidx.compose.runtime.MutableState<com.shanhai.
         }
     }
 }
+

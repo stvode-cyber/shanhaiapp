@@ -20,6 +20,9 @@ import com.shanhai.core.logic.CaptureEngine
 import com.shanhai.core.logic.CaptureResult
 import com.shanhai.core.model.Monster
 import com.shanhai.core.model.Rarity
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
+import com.shanhai.yaozhi.mutate
 import com.shanhai.yaozhi.theme.QingDai
 import com.shanhai.yaozhi.theme.ZhuSha
 import kotlinx.coroutines.delay
@@ -40,6 +43,10 @@ fun CaptureScreen(
     modifier: Modifier = Modifier
 ) {
     // 随机选一只妖
+    val gsState = LocalGameState.current
+    val versionState = LocalGsVersion.current
+    val _v = versionState.value  // 订阅 → mutate 后必重组
+    val gs = gsState.value
     val monster = remember(nodeName) { MonsterPool.all.random(Random(nodeName.hashCode())) }
     var ringRadius by remember { mutableFloatStateOf(MAX_RADIUS) }
     var isCapturing by remember { mutableStateOf(false) }
@@ -158,6 +165,16 @@ fun CaptureScreen(
                             rarity = monster.rarity,
                             assist = assistMode
                         )
+                        // 捕获成功 → 加进玩家背包
+                        if (captureResult!!.success) {
+                            gsState.mutate(versionState) { it.owned["cap_${System.currentTimeMillis()}"] =
+                                com.shanhai.core.model.MonsterInstance(
+                                    instanceId = "cap_${System.currentTimeMillis()}",
+                                    defId = monster.id,
+                                    level = 1, exp = 0, breakthrough = 0
+                                )
+                            }
+                        }
                         showResult = true
                     }
                 },

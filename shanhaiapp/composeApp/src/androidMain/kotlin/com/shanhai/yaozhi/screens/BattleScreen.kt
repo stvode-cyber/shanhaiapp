@@ -23,6 +23,7 @@ import com.shanhai.core.model.MonsterCategory
 import com.shanhai.core.model.Rarity
 import com.shanhai.core.model.Stats
 import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 import com.shanhai.yaozhi.mutate
 import com.shanhai.yaozhi.theme.QingDai
 import com.shanhai.yaozhi.theme.ZhuSha
@@ -37,6 +38,8 @@ import kotlin.random.Random
 @Composable
 fun BattleScreen(modifier: Modifier = Modifier) {
     val gsState = LocalGameState.current
+    val versionState = LocalGsVersion.current
+    val _v = versionState.value  // 订阅 → mutate 后必重组
     val gs = gsState.value  // Compose 自动订阅变化
     val pool = remember { MonsterPool.all }
     var myCombatant by remember { mutableStateOf(buildCombatant(pool[0], level = 5)) }
@@ -189,7 +192,7 @@ fun BattleScreen(modifier: Modifier = Modifier) {
                                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Button(onClick = {
-                                    gsState.mutate { it.currentFormation = tpl }
+                                    gsState.mutate(versionState) { it.currentFormation = tpl }
                                     showTemplateDialog = false
                                 }, modifier = Modifier.align(Alignment.CenterVertically)) {
                                     Text("套用", fontSize = 12.sp)
