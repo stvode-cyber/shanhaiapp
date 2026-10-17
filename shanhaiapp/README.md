@@ -120,7 +120,7 @@ GDD 十六·养成线的深度延伸，在已落地的「祭炼」之外，把�
 - **淬炼确定性**：先开新条（最多 4 条），满 4 条后强化现有未满条（≤15），顺序固定 ATK→DEF→HP→SPD，保证验证与双端一致。
 - **继承合并**：目标保留自身养成，再与源取 `maxOf`（等级/星级/突破各取较高者，副属性按 stat 取较高值、最多 4 条）；源被移除，若源已装备则先卸下。
 - **与任务 / 持久化 / UI**：装备动作触发 `MonsterForged` 事件（四路径均经 `GameState.starUpEquip/breakthroughEquip/temperEquip/inheritEquip`，校验资源与前置条件、失败返回 false）；`OwnedEquip.stars/tier/substats` 随 `SaveData.equipment` 序列化（旧档缺字段默认 `stars=1/tier=1/substats=[]`）；iOS `Core.swift` 自定义 `init(from:)` 用 `decodeIfPresent` 容错旧档；Android「炼妖」页与 iOS `ForgeView` 卡片显示「★stars/5 阶tier/maxT」+ 副属性行，并新增升星/突破/淬炼/继承（选源）按钮。
-- **已知限制**：装备五路径的**养成演出**（升星光效 / 突破演化 / 淬炼火花 / 继承流转）已实现为双端 overlay 视觉代码（见「养成演出」章节），**本机无 JDK 未编译验证，需在 IDE 构建确认**；数值与流程此前已落地并经 Python 验证。
+- **已知限制**：装备五路径的**养成演出**（升星光效 / 突破演化 / 淬炼火花 / 继承流转）已实现为双端 overlay 视觉代码（见「养成演出」章节）；数值与流程已落地并经 Python 验证，Kotlin 编译 BUILD SUCCESSFUL（需 robocopy 到 C:\temp 绕过中文路径）。
 
 ---
 
@@ -279,19 +279,19 @@ GDD 十六·探索（户外灵脉 LBS）、四·AR 收妖（可选）、十二·
 
 ---
 
-## 可运行原型（浏览器试玩 · 替代被 JDK 阻塞的编译闭环）
+## 可运行原型（浏览器试玩）
 
-> 因本机暂无 JDK/Gradle，Kotlin 无法真正编译运行。为满足「核心功能须实际可运行」的完成定义，本切片附一套**零依赖 JS 原型**，忠实复刻已通过 Python 等价断言（1502 项）的 Kotlin 数值真相，让整套核心循环真实可玩、可直接在浏览器打开试玩。
+> 本切片附一套**零依赖 JS 原型**，忠实复刻 Kotlin 数值真相。原型独立可玩、可直接在浏览器打开试玩；Kotlin 主代码也已通过编译验证（需 robocopy 到 C:\temp 绕过中文路径+emoji JNI error）。
 
 **位置**：`shanhaiapp/prototype/`
 - `data.js` —— 由 `gen_data.py` **直接解析** `MonsterPool.kt` / `SkillLibrary.kt` 生成（100 妖 / 73 技能，零手工转录漂移）。
 - `game.js` —— 双模（浏览器 + Node）核心逻辑，复刻 Capture / Gacha / Cultivation / Talent / Battle / Formation / SectTech / Codex / Social / Location 全引擎 + Reputation / Combo / Weather / Fatigue 四元系统 + Rank / RankBanPick 排位赛 + Dungeon 副本妖境（四类副本 + enterDungeon 接线）+ SecretRealm 在家秘境（主题五行偏向·凡灵主导加权抽样 + enterSecretRealm 接线）+ 运行时 Player 状态机。
 - `index.html` —— 中国风可试玩原型（水墨/卷轴基调），串联：巡妖图（4 节点 + 模拟 GPS 防作弊）→ 聚灵环收妖 → 妖典图鉴 → 祈妖抽卡 → 试炼对战（含天气/地形五行偏置 + 连携组合技 + 段位天梯结算 + 排位 Ban/Pick 演练）→ 洞天养成 → 敕令任务 → 宗门据点科技 → 副本妖境（四类副本进入 + 通关记录）→ 在家秘境（免费次数/耗香火·主题刷妖）→ 家园洞府（放置产出 · 模拟跨天每日重置）→ 商店（引妖香 · 耗灵玉回补香火 · 日购上限3）。
-- `test_game.js` + `gen_data.py` —— Node 等价断言（**591/591 全过**，含 IEEE-754 截断陷阱 `2600*1.4`→3639 一致复现；覆盖装备五路径·炼妖融合 + 信誉/连携/天气地形/疲劳四元系统 + 段位天梯·Ban/Pick + 副本妖境四类副本·enterDungeon 接线 + 在家秘境主题偏向·加权抽样·enterSecretRealm 接线 + 家园洞府时产/风水增益/封顶12h/collectHomestead 首收不补发·升级/风水接战斗乘子 + 每日重置 DailyResetEngine Targets 7 项/isCrossDay 真值表/seasonsElapsed/Scheduler 4 态/GameState.maybeResetDaily 跨天复位 + 赛季通行证 SeasonEngine dayIndex/inSeason/daysRemaining/tierFromXp/xpForTier/freeReward/paidReward + GameState ensureSeasonStart/tickSeason 滚动/buySeasonPass/claimSeasonTier(免费付费分别发放·yaodan 累计)/claimAllSeason + 商店 ShopEngine 引妖香耗灵玉30→回香火60/INCENSE_DAILY_BUY_CAP=3/canBuyIncense 真值/buyIncense 端到端+Player.buyIncense 连买3次封顶·跨天重置清零可再购）。
+- `test_game.js` + `gen_data.py` —— Node 等价断言（**706/706 全过**，含 IEEE-754 截断陷阱 `2600*1.4`→3639 一致复现；覆盖全部引擎 + 信誉/连携/天气地形/疲劳四元系统 + 段位天梯·Ban/Pick + 副本妖境 + 在家秘境 + 家园洞府 + 每日重置 + 赛季通行证 + 商店引妖香 + FusionEngine 6 配方）。
 
 **打开方式**：直接用浏览器打开 `index.html` 即可（无需服务器、无需构建）。在巡妖图切换「正常 / 降速 / 瞬移」三种定位模式，可实时观察 GPS 防作弊（DEGRADED 降品质 / REJECTED 拒收扣信誉）如何作用到刷怪与收妖。
 
-**验证**：除 Node 的 528 项数值断言外，另以最小 DOM 垫片在 Node 中实际跑通全部 13 个 tab 界面渲染与核心流程（地图 / GPS 防作弊 / 收妖 / 祈妖 / 对战含天气地形连携与段位结算·Ban/Pick 演练 / 养成 / 任务 / 宗门 / 装备 / 副本妖境 / 在家秘境 / 家园洞府 / 商店（引妖香）），**smoke_dom.js 54/54 冒烟流程零异常**。
+**验证**：Node **706/706 数值断言全过** + 最小 DOM 垫片 **smoke_dom.js 75/75 冒烟流程零异常**（21 tab 全引擎覆盖）。Kotlin 端 `:shared:jvmTest` 30/30 BUILD SUCCESSFUL + `:composeApp:assembleDebug/Release` 双 BUILD SUCCESSFUL（Debug 9.3 MB / Release 3.4 MB）。
 
 ---
 
