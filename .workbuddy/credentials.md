@@ -81,10 +81,11 @@ node test_game.js
 | osmdroid | Android SDK | 否 | Apache 2.0，Release 3.4MB |
 | MapKit | iOS SDK | 否 | Apple 原生，iosMain actual 待 macOS 桥接 |
 
-## 七、项目状态快照（2026-10-17 v0.4.0）
+## 七、项目状态快照（2026-10-17 v1.0.0-compose）
 
-- **版本**：v0.4.0 · commit ba2912a
-- **GitHub**：https://github.com/stvode-cyber/shanhaiapp（5 commits）
+- **版本**：v1.0.0-compose · tag `v1.0.0-compose` · commit ba2912a
+- **GitHub**：https://github.com/stvode-cyber/shanhaiapp（6 commits + 2 tags）
+- **APK 产物**：Debug 16.1 MB / Release 3.5 MB
 - **DoD §2 五条**：全部满足
 - **三重验证链**：706/706 + 75/75 + jvmTest 30/30 + Debug + Release 全绿
 - **源码统计**：78 Kotlin 文件（57 shared + 21 composeApp）
