@@ -26,17 +26,18 @@ robocopy "d:\1号\项目部\🎮游戏\捉宠游戏\shanhaiapp" "C:\temp\shanhai
 cd C:\temp\shanhaiapp_build
 $env:JAVA_HOME='C:\Program Files\Java\jdk-17'
 
-# 一键全链验证
+# 一键全链验证（6 步：node×2 + robocopy + gradlew×3）
 powershell -ExecutionPolicy Bypass -File "d:\1号\项目部\🎮游戏\捉宠游戏\shanhaiapp\verify_all.ps1"
 
-# Git push 到 GitHub（首次）
+# Git 操作（仓库已存在，remote = origin）
 cd "d:\1号\项目部\🎮游戏\捉宠游戏"
-git remote add origin <你的GitHub仓库URL>
-git branch -M main
-git push -u origin main
+git push                         # 推到 GitHub
+git tag -a vX.Y.Z -m "tag 说明" # 打版本标签
+git push origin vX.Y.Z          # 推标签
+gh release create vX.Y.Z ...    # 建 GitHub release
 ```
 
-## 三、版本快照（2026-10-17）
+## 三、版本快照（v1.0.0 · 2026-10-17）
 
 | 组件 | 版本 |
 |------|------|
@@ -45,10 +46,20 @@ git push -u origin main
 | Compose BOM | 2024.09.03 |
 | osmdroid | 6.1.20 |
 | Gradle Wrapper | 8.7 |
+| **GitHub Release** | **v1.0.0**（首个正式交付） |
+| **最新验证** | **verify_all [ALL PASS]**：706/706 + 75/75 + 30/30 + Debug + Release |
 
 ## 四、零 KEY 确认
 
 全项目高德/AMAP/LBS_KEY 残留：**零**。osmdroid（Android）+ OSM Web（原型）+ MapKit（iOS 待接）。
+
+## 五、GitHub 仓库
+
+- URL：`https://github.com/stvode-cyber/shanhaiapp`
+- default branch：master
+- remote name：origin
+- gh CLI 已登录（account: stvode-cyber，scope: repo）
+- 敏感文件 gitignore：keystore / local.properties / __pycache__ / build/ / .gradle/
 
 ## 五、完整信息去哪找
 
