@@ -337,6 +337,89 @@ $env:JAVA_HOME='C:\Program Files\Java\jdk-17'
 - osmdroid 6.1.20（零 KEY）
 - JDK Temurin 17
 
+## 实战：Windows 桌面壳 pywebview + PyInstaller 套路
+
+> 把 prototype/index.html 包成原生窗口 EXE。20MB，双击就能跑。
+
+### 环境
+
+| 组件 | 版本 |
+|------|------|
+| Python | 3.12.10 |
+| pywebview | 6.2.1（WebView2 后端）|
+| PyInstaller | 6.22.2 |
+
+### app.py 核心套路（路径双兼容）
+
+```python
+def get_base_path():
+    """支持两种布局：
+    - 开发：windows/app.py + ../prototype/index.html（兄弟目录）
+    - 打包：windows/app.py + prototype/index.html（同目录子文件夹）
+    """
+    base = os.path.dirname(os.path.abspath(__file__))
+    same_dir = os.path.join(base, 'prototype', 'index.html')
+    if os.path.exists(same_dir):
+        return same_dir
+    sibling = os.path.join(base, '..', 'prototype', 'index.html')
+    return sibling
+
+window = webview.create_window(
+    title='山海妖志 v1.2.0-release',
+    url=index_path,
+    width=1280, height=800,
+    confirm_close=True,   # 防误关
+)
+webview.start(debug=False)
+```
+
+### pywebview 6.2.1 API 注意
+
+| API | 状态 | 说明 |
+|-----|------|------|
+| `window.events.keys['F11'] = fn` | ❌ 不存在 | AttributeError: 'EventContainer' object has no attribute 'keys' |
+| `window.toggle_fullscreen()` | ✅ 可用 | 但只能在 JS 侧拦截 keydown 后调用 |
+| ESC 默认关闭 | ✅ 自带 | 无需写代码 |
+| `confirm_close=True` | ✅ 可用 | 关闭前弹窗确认 |
+
+### PyInstaller 打包流程
+
+```powershell
+# ★ 任何 PyInstaller 前必须 robocopy 绕过中文路径+emoji
+robocopy "d:\项目\🎮游戏\shanhaiapp\windows" "C:\temp\shanhai_windows" /E /XD "build" "dist" /PURGE /NFL /NDL /NJH /NJS
+robocopy "d:\项目\🎮游戏\shanhaiapp\prototype" "C:\temp\shanhai_windows\prototype" /E /NFL /NDL /NJH /NJS
+
+# spec 文件 datas 必须指向同目录（PyInstaller 解压到 app.py 同级）
+# datas=[('prototype', 'prototype')]   ← 正确
+# datas=[('../prototype', 'prototype')] ← 错误！打包后 ../ 不存在
+
+cd C:\temp\shanhai_windows
+python -m PyInstaller "山海妖志.spec" --clean --noconfirm
+
+# 打包完拷回项目
+robocopy "C:\temp\shanhai_windows\dist" "d:\项目\🎮游戏\shanhaiapp\windows\dist" "山海妖志.exe" /NFL /NDL /NJH /NJS
+```
+
+### .gitignore 必须排除
+
+```gitignore
+# Windows pywebview build artifacts
+/windows/dist/
+/windows/build/
+```
+
+20MB+ 的二进制 EXE 绝对不能进 git——仓库会膨胀到几百 MB，clone 变慢。
+
+### 验证清单
+
+```powershell
+# 1. 启动 EXE（或 python app.py）
+# 2. 看窗口标题是否正确（项目版本号）
+Get-Process | Where-Object { $_.MainWindowTitle -like "*山海*" } | Select Id, ProcessName, MainWindowTitle, Responding
+# 3. Responding=True 说明没崩溃
+# 4. 手动点进窗口确认内容加载（原型 Activity tab + 信誉分层 + 6 配方）
+```
+
 ---
 
 ## 实战：模块总纲引擎→Screen 绑定模式（山海妖志 v0.4.0）
