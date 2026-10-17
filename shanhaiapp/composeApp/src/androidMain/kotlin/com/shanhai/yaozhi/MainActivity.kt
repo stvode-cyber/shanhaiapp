@@ -44,6 +44,7 @@ private enum class Tab(val label: String) {
     TALENT("天赋"), STORE("商店"), QUESTS("敕令"),
     DUNGEON("副本"), SECRET("秘境"), HOMESTEAD("家园"),
     SECT("宗门"), SEASON("赛季"),
+    HONOR("荣誉"), TUTORIAL("新手"), ACTIVITY("活动"),
     ABOUT("关于")
 }
 
@@ -71,6 +72,9 @@ private fun GameRoot(codex: Codex) {
             currentTab == Tab.HOMESTEAD -> HomesteadScreen(modifier = Modifier.fillMaxSize())
             currentTab == Tab.SECT -> SectScreen(modifier = Modifier.fillMaxSize())
             currentTab == Tab.SEASON -> SeasonScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.HONOR -> HonorScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.TUTORIAL -> TutorialScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.ACTIVITY -> ActivityScreen(modifier = Modifier.fillMaxSize())
             currentTab == Tab.ABOUT -> AboutScreen(codex, modifier = Modifier.fillMaxSize())
         }
 
@@ -107,6 +111,9 @@ private fun TabIcon(tab: Tab) {
         Tab.HOMESTEAD -> Icons.Filled.Home
         Tab.SECT -> Icons.Filled.Groups
         Tab.SEASON -> Icons.Filled.Schedule
+        Tab.HONOR -> Icons.Filled.WorkspacePremium
+        Tab.TUTORIAL -> Icons.Filled.RocketLaunch
+        Tab.ACTIVITY -> Icons.Filled.Event
         Tab.ABOUT -> Icons.Filled.Info
     }
     Icon(icon, contentDescription = tab.label, modifier = Modifier.size(20.dp))
