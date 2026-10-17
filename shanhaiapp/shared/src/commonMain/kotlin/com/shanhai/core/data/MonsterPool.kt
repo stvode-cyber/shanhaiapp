@@ -41,13 +41,13 @@ object MonsterPool {
             60, 52, 130, 70, listOf("s_hantan", "s_jingtao", "s_ganlin", "s_xuanbing"), evolveFrom = "yao_she", evolveTo = "yao_long", desc = "渡劫将化龙。"),
         m("yao_long", "龙", MonsterCategory.YAO, Element.WATER, Rarity.SHEN,
             88, 72, 170, 80, listOf("s_hantan", "s_jingtao", "s_ganlin", "s_wulei"), evolveFrom = "yao_jiao", desc = "司水之神兽。"),
-        m("yao_hu", "狐妖", MonsterCategory.YAO, Element.FIRE, Rarity.FAN,
+        m("yao_hu", "狐妖", MonsterCategory.JING, Element.FIRE, Rarity.FAN,
             48, 38, 96, 72, listOf("s_fentian", "s_dingshen", "s_xuming", "s_ganlin"), evolveTo = "yao_yaohu", desc = "山野狐妖，善惑。", clan = "fox"),
-        m("yao_yaohu", "妖狐", MonsterCategory.YAO, Element.FIRE, Rarity.LING,
+        m("yao_yaohu", "妖狐", MonsterCategory.JING, Element.FIRE, Rarity.LING,
             62, 46, 118, 82, listOf("s_sanmei", "s_fentian", "s_dingshen", "s_xuming"), evolveFrom = "yao_hu", evolveTo = "yao_jiuwei", desc = "修为使然，魅惑更甚。", clan = "fox"),
-        m("yao_jiuwei", "九尾狐", MonsterCategory.YAO, Element.FIRE, Rarity.SHEN,
+        m("yao_jiuwei", "九尾狐", MonsterCategory.JING, Element.FIRE, Rarity.SHEN,
             86, 58, 150, 95, listOf("s_sanmei", "s_fentian", "s_dingshen", "s_ganlin"), evolveFrom = "yao_yaohu", desc = "青丘之主，倾国倾城。", clan = "fox"),
-        m("yao_fengli", "风狸", MonsterCategory.YAO, Element.WIND, Rarity.LING,
+        m("yao_fengli", "风狸", MonsterCategory.GUAI, Element.WIND, Rarity.LING,
             56, 44, 104, 88, listOf("s_gangfeng", "s_jifeng", "s_dingshen", "s_ganlin"), desc = "御风而行的灵狸。"),
 
         // ===== 灵兽（祥瑞） =====
@@ -69,7 +69,7 @@ object MonsterPool {
             44, 52, 130, 28, listOf("s_jingtao", "s_xuanbing", "s_jinzhong", "s_ganlin"), evolveTo = "gui_linggui", desc = "背甲初成的笨拙水妖。"),
         m("gui_linggui", "灵龟", MonsterCategory.GUAI, Element.WATER, Rarity.LING,
             58, 66, 165, 36, listOf("s_hantan", "s_xuanbing", "s_jinzhong", "s_ganlin"), evolveFrom = "gui_guijia", evolveTo = "gui_xuanwu", desc = "通灵老龟，负碑而行。"),
-        m("gui_xuanwu", "玄武", MonsterCategory.GUAI, Element.WATER, Rarity.SHEN,
+        m("gui_xuanwu", "玄武", MonsterCategory.LINGSHOU, Element.WATER, Rarity.SHEN,
             82, 78, 200, 50, listOf("s_xuanwu", "s_shuimu", "s_hantan", "s_jinzhong"), evolveFrom = "gui_linggui", desc = "四神兽之一，龟蛇合体，镇北方水德。"),
 
         // ===== 凤族进化链：灵鸟 → 青鸾 → 凤凰 =====
@@ -103,9 +103,9 @@ object MonsterPool {
             72, 66, 150, 64, listOf("s_hantan", "s_jingtao", "s_luoshi", "s_wulei"), evolveFrom = "li_li", desc = "背负仙山的巨鲤之灵。"),
 
         // ===== 鼠妖 2 段链：鼠妖 → 飞鼠精（风·妖） =====
-        m("shu_yao", "鼠妖", MonsterCategory.YAO, Element.WIND, Rarity.FAN,
+        m("shu_yao", "鼠妖", MonsterCategory.JING, Element.WOOD, Rarity.FAN,
             42, 34, 88, 84, listOf("s_jifeng", "s_gangfeng", "s_dingshen", "s_ganlin"), evolveTo = "shu_fei", desc = "洞中偷油的小妖。"),
-        m("shu_fei", "飞鼠精", MonsterCategory.YAO, Element.WIND, Rarity.LING,
+        m("shu_fei", "飞鼠精", MonsterCategory.JING, Element.WIND, Rarity.LING,
             54, 44, 100, 92, listOf("s_jifeng", "s_gangfeng", "s_qinhe", "s_dingshen"), evolveFrom = "shu_yao", desc = "胁生双翼，乘风而行。"),
 
         // ===== 蛙妖 2 段链：蛙妖 → 蟾精（水/土·精） =====
@@ -131,15 +131,15 @@ object MonsterPool {
             88, 64, 150, 86, listOf("s_wulei", "s_jiuxiao", "s_gangfeng", "s_xueshi"), desc = "四凶之一，状如虎翼，啸如雷。"),
 
         // ===== 妖（动物成妖）补全 =====
-        m("yao_ma", "马妖", MonsterCategory.YAO, Element.WIND, Rarity.FAN,
+        m("yao_ma", "马妖", MonsterCategory.JING, Element.FIRE, Rarity.FAN,
             48, 36, 96, 86, listOf("s_jifeng", "s_gangfeng", "s_dingshen", "s_ganlin"), desc = "日行千里的骏马成妖。"),
-        m("yao_niu", "牛妖", MonsterCategory.YAO, Element.EARTH, Rarity.LING,
+        m("yao_niu", "牛妖", MonsterCategory.JING, Element.EARTH, Rarity.LING,
             60, 60, 150, 44, listOf("s_luoshi", "s_houtu", "s_jinzhong", "s_fanzhen"), desc = "力能扛鼎的青牛。"),
-        m("yao_yu", "鱼妖", MonsterCategory.YAO, Element.WATER, Rarity.FAN,
+        m("yao_yu", "鱼妖", MonsterCategory.JING, Element.WATER, Rarity.FAN,
             44, 40, 104, 62, listOf("s_jingtao", "s_xuanbing", "s_kunyao", "s_ganlin"), desc = "戏水的锦鳞小妖。"),
-        m("niao_kongque", "孔雀", MonsterCategory.YAO, Element.FIRE, Rarity.LING,
+        m("niao_kongque", "孔雀", MonsterCategory.GUAI, Element.FIRE, Rarity.LING,
             64, 48, 120, 84, listOf("s_sanmei", "s_fentian", "s_jifeng", "s_dingshen"), desc = "翎羽流火的灵禽。"),
-        m("niao_zhen", "鸩", MonsterCategory.YAO, Element.WOOD, Rarity.LING,
+        m("niao_zhen", "鸩", MonsterCategory.GUAI, Element.WOOD, Rarity.LING,
             62, 46, 116, 80, listOf("s_qingmu", "s_qingmu2", "s_dingshen", "s_kunyao"), desc = "羽含剧毒的妖鸟。"),
 
         // ===== 灵兽补全（祥瑞） =====
@@ -159,11 +159,11 @@ object MonsterPool {
             88, 58, 150, 92, listOf("s_sanmei", "s_fentian", "s_wulei", "s_jifeng"), evolveFrom = "niao_xuanniao", desc = "负日而飞的三足金乌。"),
 
         // ===== 蟹妖进化链：蟹妖 → 巨蟹精 → 蟹将（水·妖） =====
-        m("xie_yao", "蟹妖", MonsterCategory.YAO, Element.WATER, Rarity.FAN,
+        m("xie_yao", "蟹妖", MonsterCategory.JING, Element.WATER, Rarity.FAN,
             44, 46, 112, 44, listOf("s_jingtao", "s_xuanbing", "s_kunyao", "s_ganlin"), evolveTo = "xie_juxie", desc = "横行浅滩的甲妖。"),
-        m("xie_juxie", "巨蟹精", MonsterCategory.YAO, Element.WATER, Rarity.LING,
+        m("xie_juxie", "巨蟹精", MonsterCategory.JING, Element.WATER, Rarity.LING,
             56, 62, 138, 40, listOf("s_hantan", "s_jingtao", "s_jinzhong", "s_xuanbing"), evolveFrom = "xie_yao", evolveTo = "xie_jiang", desc = "双螯生雷的蟹精。"),
-        m("xie_jiang", "蟹将", MonsterCategory.YAO, Element.WATER, Rarity.SHEN,
+        m("xie_jiang", "蟹将", MonsterCategory.JING, Element.WATER, Rarity.SHEN,
             82, 74, 170, 46, listOf("s_hantan", "s_jingtao", "s_wanjian", "s_xueshi"), evolveFrom = "xie_juxie", desc = "镇守水府的甲胄之将。"),
 
         // ===== 鹤妖进化链：鹤妖 → 仙鹤 → 黄鹤（风·妖） =====
@@ -181,9 +181,9 @@ object MonsterPool {
             66, 56, 140, 72, listOf("s_ruijin", "s_liekong", "s_wanjian", "s_dingshen"), evolveFrom = "hu_yao", desc = "吊睛白额，虎之小弟。"),
 
         // ===== 兔妖 2 段链：兔妖 → 玉兔（金·妖，月宫） =====
-        m("tu_yao", "兔妖", MonsterCategory.YAO, Element.METAL, Rarity.FAN,
+        m("tu_yao", "兔妖", MonsterCategory.JING, Element.WOOD, Rarity.FAN,
             40, 36, 92, 84, listOf("s_ruijin", "s_jifeng", "s_dingshen", "s_ganlin"), evolveTo = "tu_yutu", desc = "捣药成妖的雪团。"),
-        m("tu_yutu", "玉兔", MonsterCategory.YAO, Element.METAL, Rarity.XIAN,
+        m("tu_yutu", "玉兔", MonsterCategory.JING, Element.METAL, Rarity.XIAN,
             64, 52, 128, 88, listOf("s_ruijin", "s_jifeng", "s_qinhe", "s_dingshen"), evolveFrom = "tu_yao", desc = "广寒宫中捣仙药的玉兔。"),
 
         // ===== 猪妖 2 段链：猪妖 → 豪彘（土·妖） =====
@@ -193,9 +193,9 @@ object MonsterPool {
             58, 62, 144, 44, listOf("s_luoshi", "s_houtu", "s_jinzhong", "s_fanzhen"), evolveFrom = "zhu_yao", desc = "拱石为巢的刚鬣之妖。"),
 
         // ===== 猴妖 2 段链：猴妖 → 灵明石猴（木·妖） =====
-        m("hou_yao", "猴妖", MonsterCategory.YAO, Element.WOOD, Rarity.FAN,
+        m("hou_yao", "猴妖", MonsterCategory.GUAI, Element.WOOD, Rarity.FAN,
             50, 40, 100, 82, listOf("s_qingmu", "s_qingmu2", "s_dingshen", "s_ganlin"), evolveTo = "hou_lingming", desc = "攀枝盗桃的灵猴。"),
-        m("hou_lingming", "灵明石猴", MonsterCategory.YAO, Element.WOOD, Rarity.SHEN,
+        m("hou_lingming", "灵明石猴", MonsterCategory.GUAI, Element.WOOD, Rarity.SHEN,
             86, 64, 150, 90, listOf("s_qingmu", "s_qingmu2", "s_wanjian", "s_jifeng"), evolveFrom = "hou_yao", desc = "通变化、识天时之石猴。"),
 
         // ===== 犬妖 2 段链：犬妖 → 哮天犬（金·妖） =====
@@ -205,27 +205,27 @@ object MonsterPool {
             88, 60, 148, 94, listOf("s_ruijin", "s_liekong", "s_wanjian", "s_gangfeng"), evolveFrom = "quan_yao", desc = "随主擒妖的细腰神犬。"),
 
         // ===== 虫妖 2 段链：虫妖 → 蝶妖（风·妖） =====
-        m("chong_yao", "虫妖", MonsterCategory.YAO, Element.WIND, Rarity.FAN,
+        m("chong_yao", "虫妖", MonsterCategory.JING, Element.WOOD, Rarity.FAN,
             40, 34, 88, 80, listOf("s_jifeng", "s_gangfeng", "s_dingshen", "s_ganlin"), evolveTo = "die_yao", desc = "草间蠕动的小妖。"),
-        m("die_yao", "蝶妖", MonsterCategory.YAO, Element.WIND, Rarity.LING,
+        m("die_yao", "蝶妖", MonsterCategory.JING, Element.WOOD, Rarity.LING,
             52, 42, 98, 88, listOf("s_jifeng", "s_gangfeng", "s_qinhe", "s_dingshen"), evolveFrom = "chong_yao", desc = "采花成妖的彩翼精灵。"),
 
         // ===== 鹰妖 2 段链：鹰妖 → 神鹰（风·妖） =====
         m("ying_yao", "鹰妖", MonsterCategory.YAO, Element.WIND, Rarity.FAN,
             52, 38, 100, 92, listOf("s_jifeng", "s_gangfeng", "s_dingshen", "s_ganlin"), evolveTo = "ying_shen", desc = "盘旋觅食的猛禽妖。"),
-        m("ying_shen", "神鹰", MonsterCategory.YAO, Element.WIND, Rarity.SHEN,
+        m("ying_shen", "神鹰", MonsterCategory.GUAI, Element.WIND, Rarity.SHEN,
             88, 56, 146, 98, listOf("s_jifeng", "s_gangfeng", "s_wulei", "s_dingshen"), evolveFrom = "ying_yao", desc = "搏击长空的千里神鹰。"),
 
         // ===== 鲲鹏 2 段链：鲲 → 鹏（水 → 风·妖） =====
-        m("kun_yao", "鲲", MonsterCategory.YAO, Element.WATER, Rarity.FAN,
+        m("kun_yao", "鲲", MonsterCategory.GUAI, Element.WATER, Rarity.FAN,
             46, 48, 130, 44, listOf("s_jingtao", "s_hantan", "s_kunyao", "s_xuanbing"), evolveTo = "peng_yao", desc = "北冥之鱼，其大不知其几千里。"),
-        m("peng_yao", "鹏", MonsterCategory.YAO, Element.WIND, Rarity.SHEN,
+        m("peng_yao", "鹏", MonsterCategory.GUAI, Element.WIND, Rarity.SHEN,
             86, 58, 150, 96, listOf("s_jifeng", "s_gangfeng", "s_wulei", "s_qinhe"), evolveFrom = "kun_yao", desc = "怒而飞，其翼若垂天之云。"),
 
         // ===== 蟒妖 2 段链：蟒妖 → 腾蛇（火·妖） =====
-        m("mang_yao", "蟒妖", MonsterCategory.YAO, Element.FIRE, Rarity.FAN,
+        m("mang_yao", "蟒妖", MonsterCategory.GUAI, Element.FIRE, Rarity.FAN,
             50, 42, 112, 62, listOf("s_fentian", "s_sanmei", "s_dingshen", "s_ganlin"), evolveTo = "mang_tengshe", desc = "缠树吐信的巨蟒。"),
-        m("mang_tengshe", "腾蛇", MonsterCategory.YAO, Element.FIRE, Rarity.SHEN,
+        m("mang_tengshe", "腾蛇", MonsterCategory.GUAI, Element.FIRE, Rarity.SHEN,
             90, 60, 156, 88, listOf("s_sanmei", "s_fentian", "s_wulei", "s_jifeng"), evolveFrom = "mang_yao", desc = "乘雾而游的火鳞神蛇。"),
 
         // ===== 灵兽补全（龙子·瑞兽·神兽） =====
