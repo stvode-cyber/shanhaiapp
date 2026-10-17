@@ -61,7 +61,7 @@ gh release create vX.Y.Z ...    # 建 GitHub release
 - gh CLI 已登录（account: stvode-cyber，scope: repo）
 - 敏感文件 gitignore：keystore / local.properties / __pycache__ / build/ / .gradle/
 
-## 五、完整信息去哪找
+## 六、完整信息去哪找
 
 - 凭证细节 + 变更日志 → `.workbuddy/credentials.md`
 - 活跃阻断/可验证基线 → `工作台帐.md ①仪表盘`
