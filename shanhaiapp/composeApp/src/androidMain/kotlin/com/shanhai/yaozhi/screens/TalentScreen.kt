@@ -12,12 +12,24 @@ import com.shanhai.core.data.MonsterPool
 import com.shanhai.core.logic.TalentEngine
 import com.shanhai.core.model.MonsterInstance
 import com.shanhai.core.model.TalentBranch
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
+import com.shanhai.yaozhi.mutate
 import com.shanhai.yaozhi.components.EmptyState
 
+/**
+ * 天赋分配 · V2
+ * 从 gs.owned 取真实妖 + gs.assignTalent  mutation
+ */
 @Composable
 fun TalentScreen(modifier: Modifier = Modifier) {
-    val monster = remember { MonsterInstance(instanceId = "talent_0", defId = MonsterPool.all[0].id, level = 10, exp = 0, breakthrough = 0) }
-    var inst by remember { mutableStateOf(monster) }
+    val gsState = LocalGameState.current
+    val versionState = LocalGsVersion.current
+    val _v = versionState.value  // 订阅 → 天赋点后自动刷新
+    val gs = gsState.value
+
+    val inst = gs.owned.values.firstOrNull()
+        ?: MonsterInstance(instanceId = "auto_talent", defId = MonsterPool.all[0].id, level = 10, exp = 0, breakthrough = 0)
 
     val cap = TalentEngine.talentCap(inst)
     val alloc = TalentEngine.allocated(inst)
@@ -29,9 +41,6 @@ fun TalentScreen(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant)
 
         val branches = TalentBranch.values()
-        if (branches.isEmpty()) {
-            EmptyState("✨", "暂无天赋分支")
-        }
         branches.forEach { branch ->
             val layers = TalentEngine.layersOf(inst, branch)
             val canAdd = TalentEngine.canAssign(inst, branch)
@@ -53,11 +62,17 @@ fun TalentScreen(modifier: Modifier = Modifier) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Button(
-                        onClick = { TalentEngine.assign(inst, branch)?.let { inst = it } },
+                        onClick = {
+                            gsState.mutate(versionState) { it.assignTalent(inst.instanceId, branch) }
+                        },
                         enabled = canAdd
                     ) { Text("+") }
                 }
             }
+        }
+
+        if (branches.isEmpty()) {
+            EmptyState("✨", "暂无天赋分支")
         }
     }
 }
