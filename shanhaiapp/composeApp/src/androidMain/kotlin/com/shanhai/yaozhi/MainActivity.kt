@@ -42,6 +42,8 @@ private enum class Tab(val label: String) {
     MAP("巡妖"), CODEX("妖典"), BATTLE("试炼"),
     CULTIVATE("养成"), EQUIP("装备"), FUSE("融合"),
     TALENT("天赋"), STORE("商店"), QUESTS("敕令"),
+    DUNGEON("副本"), SECRET("秘境"), HOMESTEAD("家园"),
+    SECT("宗门"), SEASON("赛季"),
     ABOUT("关于")
 }
 
@@ -64,6 +66,11 @@ private fun GameRoot(codex: Codex) {
             currentTab == Tab.TALENT -> TalentScreen(modifier = Modifier.fillMaxSize())
             currentTab == Tab.STORE -> StoreScreen(modifier = Modifier.fillMaxSize())
             currentTab == Tab.QUESTS -> QuestsScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.DUNGEON -> DungeonScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.SECRET -> SecretScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.HOMESTEAD -> HomesteadScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.SECT -> SectScreen(modifier = Modifier.fillMaxSize())
+            currentTab == Tab.SEASON -> SeasonScreen(modifier = Modifier.fillMaxSize())
             currentTab == Tab.ABOUT -> AboutScreen(codex, modifier = Modifier.fillMaxSize())
         }
 
@@ -95,6 +102,11 @@ private fun TabIcon(tab: Tab) {
         Tab.TALENT -> Icons.Filled.Star
         Tab.STORE -> Icons.Filled.ShoppingCart
         Tab.QUESTS -> Icons.Filled.Assignment
+        Tab.DUNGEON -> Icons.Filled.Castle
+        Tab.SECRET -> Icons.Filled.Nature
+        Tab.HOMESTEAD -> Icons.Filled.Home
+        Tab.SECT -> Icons.Filled.Groups
+        Tab.SEASON -> Icons.Filled.Schedule
         Tab.ABOUT -> Icons.Filled.Info
     }
     Icon(icon, contentDescription = tab.label, modifier = Modifier.size(20.dp))
@@ -106,8 +118,8 @@ private fun AboutScreen(codex: Codex, modifier: Modifier) {
         modifier = modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text("山海妖志 · v0.2.0", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        Text("V1 核心循环 + V2 养成经济 已交付", fontSize = 14.sp,
+        Text("山海妖志 · v0.3.0", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text("V1 核心循环 + V2 养成经济 + V3 副本社交 已交付", fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         HorizontalDivider()
         Text("引擎健康度", fontSize = 18.sp, fontWeight = FontWeight.Medium)
@@ -126,9 +138,15 @@ private fun AboutScreen(codex: Codex, modifier: Modifier) {
         AboutRow("⑦ 天赋", "✅ TalentEngine 三分支加点")
         AboutRow("⑧ 商店", "✅ ShopEngine 焚香")
         AboutRow("⑨ 敕令", "✅ QuestLibrary 列表")
-        Text("V3/V4 待做", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-        AboutRow("副本/秘境/家园/宗门/赛季", "⬜")
-        AboutRow("荣誉/教程/活动/视觉润色", "⬜")
+        Text("V3 ✅", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        AboutRow("⑩ 副本妖境", "✅ DungeonEngine 四类副本")
+        AboutRow("⑪ 在家秘境", "✅ SecretRealmEngine 主题刷妖")
+        AboutRow("⑫ 家园洞府", "✅ HomesteadEngine 离线产出")
+        AboutRow("⑬ 宗门科技", "✅ SectTechEngine 科技树")
+        AboutRow("⑭ 赛季通行证", "✅ SeasonEngine 90 天双轨")
+        Text("V4 待做", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        AboutRow("荣誉/教程/活动", "⬜")
+        AboutRow("视觉润色", "⬜")
     }
 }
 
