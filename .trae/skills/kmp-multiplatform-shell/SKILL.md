@@ -336,3 +336,69 @@ $env:JAVA_HOME='C:\Program Files\Java\jdk-17'
 - Kotlin 2.0.21 + AGP 8.4.2 + Compose Compiler Gradle plugin
 - osmdroid 6.1.20（零 KEY）
 - JDK Temurin 17
+
+---
+
+## 实战：模块总纲引擎→Screen 绑定模式（山海妖志 v0.4.0）
+
+> 当项目核心引擎 + Compose Screen 全量交付后，17 个模块总纲的**标准化升级套路**。
+> 解决的问题：模块总纲停留在"计划子文件(待建)"状态，过时信息误导新 AI。
+
+### 总纲模板（50-80 行/个）
+
+```markdown
+# XX · 模块名 · 模块总纲
+
+> 模块编号：XX ｜ 最后更新：YYYY-MM-DD ｜ 状态：✅ 已实现+已验证（Screen名 + 可选备注）
+
+## 一、模块目的
+一句话说清模块干啥 + 对应 GDD 章节。
+
+## 二、对应引擎与 UI（核心表）
+| 层 | 文件 | 说明 |
+|----|------|------|
+| Kotlin 引擎 | `shared/.../logic/XXXEngine.kt` | 引擎职责 |
+| Kotlin 引擎 | `shared/.../data/XXLibrary.kt` | 数据真源 |
+| Compose Screen | `composeApp/.../screens/XxxScreen.kt` | UI 职责 |
+
+## 三、当前状态
+- ✅ 引擎验证点：具体做了啥、断言数
+- ✅ Screen 验证点：构建绿 / UI 要点
+- ℹ️ 待接入项（如有）：纯可选、不影响核心
+
+## 四、与其他模块关系
+- 上游依赖：哪些模块喂数据给本模块
+- 下游影响：本模块喂数据给哪些模块
+
+## 五、导航
+- 返回：[00_工程总纲](../../00_工程总纲.md) ｜ 规约：[90_文档规约](../../90_文档规约/00_总纲.md)
+```
+
+### 升级 Checklist
+
+1. **删"计划子文件(待建)"** — 项目完整交付后不需要细碎文档，核心引擎+Screen 足够
+2. **加"对应引擎与 UI"绑定表** — 每个模块精确绑定到哪个 Kotlin 文件 + 哪个 Screen
+3. **更新日期到交付日** — 8-19 旧版全部同步到 10-17 v0.4.0
+4. **修正过时状态** — "真实地图 SDK 待接入" → osmdroid+MapScreen ✅；"无 JDK 未编译" → 三重验证链全绿 ✅
+5. **50-80 行控制** — 不堆 GDD 正文，只做导航+状态+绑定
+
+### 17 模块升级速查（v0.4.0 版已完成）
+
+| 编号 | 模块 | 核心引擎 | Compose Screen |
+|------|------|----------|----------------|
+| 10 | 探索与地图 | LocationEngine + SecretRealmEngine | MapScreen + SecretScreen |
+| 20 | 收妖与AR | CaptureEngine + MoralChoiceEngine | CaptureScreen |
+| 30 | 图鉴 | Codex | CodexScreen |
+| 40 | 战斗 | BattleEngine + BattleSession + FormationEngine | BattleScreen |
+| 50 | 技能 | SkillLibrary + ComboEngine | 嵌入 BattleScreen |
+| 60 | 养成 | CultivationEngine + TalentEngine + FusionEngine | Cultivate + Talent + Fuse |
+| 70 | 装备 | EquipmentLibrary + EquipmentEngine | EquipScreen |
+| 80 | 妖池 | MonsterPool | 无（数据真源） |
+| 100 | 副本妖境 | DungeonEngine | DungeonScreen |
+| 110 | 社交与据点 | SocialEngine + SectTechEngine | SectScreen |
+| 120 | 经济与祈妖 | ShopEngine + GachaEngine | StoreScreen |
+| 130 | 公平与防作弊 | ReputationEngine + FatigueEngine + SaveIntegrityEngine | 嵌入 HonorScreen |
+| 140 | 排位赛 | RankEngine + RankBanPickEngine | 待建（平台匹配） |
+| 150 | 家园洞府 | HomesteadEngine | HomesteadScreen |
+| 160 | 引导留存与运营 | TutorialEngine + SeasonEngine + HonorEngine + ActivityEngine | Tutorial + Season + Honor + Activity + Quests |
+| 170 | 技术架构与工程 | PlatformBridge(commonMain) + GameState | MainActivity + HubScreen + ShanhaiTheme |
