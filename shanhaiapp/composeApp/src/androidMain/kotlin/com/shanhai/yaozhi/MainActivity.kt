@@ -91,7 +91,7 @@ private fun GameRoot(codex: Codex) {
             when (screen) {
                 HubItem.MAP -> MapScreen(onEnterCapture = {},
                     modifier = Modifier.padding(padding).fillMaxSize())
-                HubItem.CODEX -> CodexScreen(codex,
+                HubItem.CODEX -> CodexScreen(
                     modifier = Modifier.padding(padding).fillMaxSize())
                 HubItem.BATTLE -> BattleScreen(
                     modifier = Modifier.padding(padding).fillMaxSize())

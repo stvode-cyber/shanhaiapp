@@ -10,15 +10,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.shanhai.core.data.MonsterPool
 import com.shanhai.core.logic.HonorEngine
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 
 @Composable
 fun HonorScreen(modifier: Modifier = Modifier) {
-    var profile by remember {
-        mutableStateOf(HonorEngine.HonorProfile(
-            achievementCount = 12, achievementTotal = 30,
-            rankTierIndex = 2, codexRatio = 45, tribulationTotal = 0
-        ))
+    val gsState = LocalGameState.current
+    val _v = LocalGsVersion.current.value  // 订阅 → 成就变化自动刷新
+    val gs = gsState.value
+
+    // 从 gs 真实数据构建 HonorProfile
+    val profile = remember(gs) {
+        val total = MonsterPool.all.size
+        val caught = gs.codex.snapshotRegion().size
+        val codexRatio = if (total > 0) (caught * 100 / total) else 0
+        // rankTierIndex 由 codexRatio + tribulation 推导（HonorEngine 纯函数，Screen 负责映射）
+        val rankTierIndex = when {
+            gs.tribulationTotal >= 5 -> 4
+            gs.tribulationTotal >= 2 -> 3
+            codexRatio >= 80 -> 2
+            codexRatio >= 40 -> 1
+            else -> 0
+        }
+        HonorEngine.HonorProfile(
+            achievementCount = gs.achievementCount(),
+            achievementTotal = gs.achievementTotal(),
+            rankTierIndex = rankTierIndex,
+            codexRatio = codexRatio,
+            tribulationTotal = gs.tribulationTotal
+        )
     }
     val TIERS = listOf("炼气", "筑基", "金丹", "元婴", "化神")
 
@@ -87,16 +109,17 @@ fun HonorScreen(modifier: Modifier = Modifier) {
             }
         }
 
-        // 快速模拟
+        // 段位推导说明
         Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = {
-                profile = profile.copy(achievementCount = (profile.achievementCount + 1).coerceAtMost(profile.achievementTotal),
-                    codexRatio = (profile.codexRatio + 5).coerceAtMost(100),
-                    rankTierIndex = (profile.rankTierIndex + 1).coerceAtMost(4))
-            }, modifier = Modifier.weight(1f)) { Text("+ 达成") }
-            OutlinedButton(onClick = { profile = profile.copy(achievementCount = 12, rankTierIndex = 2, codexRatio = 45) },
-                modifier = Modifier.weight(1f)) { Text("重置") }
+        Surface(shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text("段位由图鉴完成度 + 渡劫次数推导", fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("炼气(<40%) → 筑基(40%) → 金丹(80%) → 元婴(渡劫≥2) → 化神(渡劫≥5)",
+                    fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
 }

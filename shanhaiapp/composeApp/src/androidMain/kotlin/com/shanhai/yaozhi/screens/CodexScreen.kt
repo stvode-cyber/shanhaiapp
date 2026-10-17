@@ -23,14 +23,19 @@ import com.shanhai.core.logic.Codex
 import com.shanhai.core.model.Monster
 import com.shanhai.core.model.MonsterCategory
 import com.shanhai.core.model.Rarity
+import com.shanhai.yaozhi.LocalGameState
+import com.shanhai.yaozhi.LocalGsVersion
 import com.shanhai.yaozhi.components.EmptyState
 
 /**
- * 妖典图鉴 · V1
- * 列表 + 按稀有度筛选 + 按类别筛选 + 点击查看详情
+ * 妖典图鉴 · V2
+ * 从 GameState.codex 取已捕获数据 + MonsterPool 全量定义
  */
 @Composable
-fun CodexScreen(codex: Codex, modifier: Modifier = Modifier) {
+fun CodexScreen(modifier: Modifier = Modifier) {
+    val gsState = LocalGameState.current
+    val _v = LocalGsVersion.current.value  // 订阅 → 捕获后自动刷新
+    val codex = gsState.value.codex
     val allMonsters = remember { MonsterPool.all }
     var rarityFilter by remember { mutableStateOf<Rarity?>(null) }
     var categoryFilter by remember { mutableStateOf<MonsterCategory?>(null) }
