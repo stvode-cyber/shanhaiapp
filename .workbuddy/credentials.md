@@ -81,13 +81,16 @@ node test_game.js
 | osmdroid | Android SDK | 否 | Apache 2.0，Release 3.4MB |
 | MapKit | iOS SDK | 否 | Apple 原生，iosMain actual 待 macOS 桥接 |
 
-## 七、项目状态快照（2026-10-17）
+## 七、项目状态快照（2026-10-17 v0.4.0）
 
+- **版本**：v0.4.0 · commit ba2912a
+- **GitHub**：https://github.com/stvode-cyber/shanhaiapp（5 commits）
 - **DoD §2 五条**：全部满足
 - **三重验证链**：706/706 + 75/75 + jvmTest 30/30 + Debug + Release 全绿
-- **原型 tab**：21 全引擎覆盖
+- **源码统计**：78 Kotlin 文件（57 shared + 21 composeApp）
+- **Compose Screen**：18 个（V1 核心 4 + V2 养成 6 + V3 副本 5 + V4 收尾 3）
+- **Tab 架构**：底部 5 核心（巡妖/妖典/试炼/副本/我的）+ Hub 网格 18 功能全挂
 - **活跃阻断**：P17 gradle 中文路径、P29 iOS 需 macOS（均为硬限）
-- **Windows 可推进空间**：基本为零
 
 ---
 

@@ -7,12 +7,17 @@
 
 ## 2026-10
 
-- **2026-10-17 · GitHub 推送** · 项目首次 init + 推送到 `https://github.com/stvode-cyber/shanhaiapp`，4 个 commit，敏感文件（keystore/local.properties）全 gitignore（→ 仓库首页）。
-- **2026-10-17 · 凭证集中化** · 新建 `.workbuddy/credentials.md`（独立凭证/路径/版本/命令速查）+ 项目级 Skill `.trae/skills/project-credentials/SKILL.md`，AGENTS §11 升级为四件套交接（→ 凭证文件）。
-- **2026-10-17 · 台账体系瘦身** · RCC-05/06/07 简化为一行一坑、维护 hack 去重指 credentials.md、新增任务卡+进度条结构、shanhaiapp 下 6 个历史 md 归档、STATUS.md 瘦身为纯导航（→ 工作台帐）。
-- **2026-10-17 · 零 KEY 终态闭环** · 高德 AAR 依赖清零、PlatformBridge 全 osmdroid、Release APK 70MB→3.4MB、三重验证链全绿 706/706 + 75/75 + 30/30 + Debug + Release（→ 根目录 README）。
-- **2026-10-17 · 原型 21 tab 全引擎** · 活动日历 tab + 信誉分层仪表 + FusionEngine 6 配方 + 21 tab 全部引擎深接，GameState→原型完全镜像（→ shanhaiapp/prototype/）。
-- **2026-10-01 · Kotlin 2.0 + Compose 恢复** · 升 Kotlin 2.0.21 + AGP 8.4.2 + Compose Compiler Gradle plugin，K2 零兼容问题；composeApp 改为 KMP application；iosMain actual 用 platform.Foundation 占位。
+- **2026-10-17 · v0.4.0 视觉润色** · ShanhaiTheme 升级 Typography+Shapes+Dark、MainActivity 重构 Scaffold+5 核心 tab+Hub 网格+AnimatedContent 淡入淡出、HubScreen 18 功能入口+图鉴进度条。GitHub ba2912a（→ composeApp/）。
+- **2026-10-17 · V4 收尾 3 Screen** · HonorScreen（荣誉勋章称号）+ TutorialScreen（新手引导步骤）+ ActivityScreen（限时活动聚合）。GitHub 0abe48a（→ composeApp/screens/）。
+- **2026-10-17 · V3 副本社交 5 Screen** · DungeonScreen（四类副本）+ SecretScreen（4 主题秘境）+ HomesteadScreen（离线产出）+ SectScreen（宗门科技树）+ SeasonScreen（赛季通行证）。GitHub 272eaf9（→ composeApp/screens/）。
+- **2026-10-17 · V2 养成经济 6 Screen** · CultivateScreen（升级/突破/进化）+ EquipScreen（装备列表）+ FuseScreen（融合预览）+ TalentScreen（三分支加点）+ StoreScreen（焚香购买）+ QuestsScreen（敕令列表）。GitHub f30cd36（→ composeApp/screens/）。
+- **2026-10-17 · V1 核心循环 4 Screen** · MapScreen（osmdroid 巡妖图）+ CaptureScreen（光环收服）+ CodexScreen（妖典双筛选）+ BattleScreen（回合制对战）。GitHub d919e9d（→ composeApp/screens/）。
+- **2026-10-17 · GitHub 推送** · 项目首次 init + 推送到 `https://github.com/stvode-cyber/shanhaiapp`，4 个 commit，敏感文件全 gitignore（→ 仓库首页）。
+- **2026-10-17 · 凭证集中化** · 新建 `.workbuddy/credentials.md` + Skill `project-credentials`（→ 凭证文件）。
+- **2026-10-17 · 台账体系瘦身** · RCC 简化 + 任务卡+进度条 + 模块总纲归档（→ 工作台帐）。
+- **2026-10-17 · 零 KEY 终态闭环** · osmdroid 替换高德，Release APK 70MB→3.4MB（→ 根目录 README）。
+- **2026-10-17 · 原型 21 tab 全引擎** · 活动日历+信誉分层+FusionEngine 6 配方（→ prototype/）。
+- **2026-10-01 · Kotlin 2.0 + Compose 恢复** · Kotlin 2.0.21 + AGP 8.4.2 + Compose Compiler Gradle plugin（→ shared/）。
 
 ---
 

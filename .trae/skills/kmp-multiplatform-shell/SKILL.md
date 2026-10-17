@@ -229,3 +229,110 @@ android {
 ```
 
 三条全绿 = KMP 多 target 壳搭完。
+
+---
+
+## 实战：Compose 壳 v0.4.0 架构模式（山海妖志）
+
+> 项目 `shanhaiapp/composeApp` 已验证的最佳实践，避免底部导航超过 5 tab 的 UX 灾难。
+
+### 架构选型：5 核心 tab + Hub 网格
+
+| 层级 | 数量 | 方案 |
+|------|------|------|
+| 底部导航 | 5 | Scaffold → NavigationBar |
+| 次级入口 | 13 | HubScreen 网格（4 列 LazyVerticalGrid） |
+| 页面总数 | 18 | 5 核心 + 13 次级 |
+
+**为什么这样做**：Material 3 NavigationBar 官方建议 ≤ 5 item，超过后触控目标变小、用户找不到。用 HubScreen 做"全部功能"入口，既保证 UX，又能塞下任意多的 Screen。
+
+### MainActivity 骨架
+
+```kotlin
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        OsmBootstrap.init(this)                    // ← osmdroid 必须先 init
+        val codex = Codex(MonsterPool.all)
+        setContent {
+            ShanhaiTheme { Surface { GameRoot(codex) } }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun GameRoot(codex: Codex) {
+    var currentTab by remember { mutableStateOf(CoreTab.MAP) }
+    var hubNav by remember { mutableStateOf<HubItem?>(null) }  // Hub 跳转目标
+
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                CoreTab.values().forEach { tab ->
+                    NavigationBarItem(
+                        selected = currentTab == tab && hubNav == null,
+                        onClick = { currentTab = tab; hubNav = null },  // ← 清空 Hub
+                        icon = { Icon(tab.icon, null) },
+                        label = { Text(tab.label) }
+                    )
+                }
+            }
+        }
+    ) { padding ->
+        AnimatedContent(
+            targetState = hubNav ?: currentTab.toHubItem(),
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            label = "screen_transition"
+        ) { item ->
+            when (item) {
+                HubItem.MAP -> MapScreen(modifier = Modifier.padding(padding))
+                // ... 全部 HubItem 分支
+                null -> HubScreen(codex, onNavigate = { hubNav = it },
+                    modifier = Modifier.padding(padding))
+            }
+        }
+    }
+}
+```
+
+### 关键要点
+
+| 点 | 说明 |
+|----|------|
+| **Scaffold 必须用 padding** | `Modifier.padding(padding)` 包裹内容才不会被 NavigationBar 遮挡 |
+| **AnimatedContent 转场** | `fadeIn() togetherWith fadeOut()` 是最轻量的页面切换，不增加性能开销 |
+| **HubItem 枚举统一路由** | 5 核心 tab 的枚举值也在 HubItem 里，MainActivity 的 `when` 只需一套 |
+| **hubNav 覆盖 currentTab** | 用户点 Hub 网格某入口 → hubNav 设值 → AnimatedContent 自动切换页面 |
+| **Hub tab onClick 清空 hubNav** | 回底部导航时 hubNav = null，路由回到 currentTab 控制 |
+
+### Theme 三档结构
+
+```kotlin
+private val ShanhaiTypography = Typography(
+    headlineLarge = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
+    titleLarge   = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold),
+    bodyMedium   = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal),
+)
+private val ShanhaiShapes = Shapes(
+    extraSmall = RoundedCornerShape(4.dp),
+    small      = RoundedCornerShape(8.dp),
+    medium     = RoundedCornerShape(12.dp),
+    large      = RoundedCornerShape(16.dp),
+)
+```
+
+### Windows 上的 Gradle 硬坑
+
+```powershell
+# ★ 任何 gradle 前必须 robocopy 绕过中文路径+emoji
+robocopy "d:\项目\🐍shanhaiapp" "C:\temp\shanhaiapp_build" /E /XD "build" ".gradle" /PURGE /NFL /NDL /NJH /NJS /nc /ns /np
+cd C:\temp\shanhaiapp_build
+$env:JAVA_HOME='C:\Program Files\Java\jdk-17'
+.\gradlew.bat :composeApp:assembleDebug --no-daemon --console=plain
+```
+
+### 版本快照（2026-10-17）
+
+- Kotlin 2.0.21 + AGP 8.4.2 + Compose Compiler Gradle plugin
+- osmdroid 6.1.20（零 KEY）
+- JDK Temurin 17
