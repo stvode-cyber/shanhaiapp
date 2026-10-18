@@ -37,6 +37,11 @@ val JinHuang     = Color(0xFFC89B3C)   // 金黄（点缀·神·高亮）
 val YanHui       = Color(0xFF5C5C5C)   // 烟灰（次级文字）
 val XueBai       = Color(0xFFFFFFFF)   // 雪白（反色）
 
+// ===== 功能区色（HubItem/RegionTheme/主题分支用）=====
+val XianZi       = Color(0xFF9B59B6)   // 仙紫（养成/进化）
+val LingDian     = Color(0xFF3498DB)   // 灵靛（装备/水域主题）
+val ShengLv      = Color(0xFF27AE60)   // 生绿（商店/新手）
+
 // ===== 稀有度统一色阶 =====
 // 所有 Screen 必须用这套色，禁止各 Screen 散写 Rarity 颜色
 val RarityColors = mapOf(

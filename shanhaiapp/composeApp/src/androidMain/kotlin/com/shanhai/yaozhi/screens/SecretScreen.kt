@@ -55,7 +55,7 @@ fun SecretScreen(modifier: Modifier = Modifier) {
         themes.forEach { theme ->
             val themeColor = when (theme) {
                 RegionTheme.SHANLIN -> QingDai
-                RegionTheme.SHUIYU -> Color(0xFF3498DB)
+                RegionTheme.SHUIYU -> LingDian
                 RegionTheme.GUMU -> MoHei
                 RegionTheme.DONGHAI -> JinHuang
             }

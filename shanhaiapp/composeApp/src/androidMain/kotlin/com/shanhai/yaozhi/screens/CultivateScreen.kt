@@ -159,7 +159,7 @@ fun CultivateScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth().height(48.dp)
                 .graphicsLayer { scaleX = evoScale.value; scaleY = evoScale.value },
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (canEvo) Color(0xFF9B59B6) else YanHui.copy(alpha = 0.4f))
+                containerColor = if (canEvo) XianZi else YanHui.copy(alpha = 0.4f))
         ) { Text(if (canEvo) "进化！" else "无进化链或等级不足", fontSize = 15.sp) }
 
         Spacer(Modifier.height(4.dp))
