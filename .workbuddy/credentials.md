@@ -90,8 +90,8 @@ node test_game.js
 ## 七、项目状态快照（2026-10-18 v1.2.0-release 存档+正式签名）
 
 - **版本**：v1.2.0-release
-- **GitHub**：https://github.com/stvode-cyber/shanhaiapp（15 commits · 最新 20fc076）
-- **Git Tags**：v1.0.0 + v1.0.0-compose
+- **GitHub**：https://github.com/stvode-cyber/shanhaiapp（19 commits · 最新 10bb91e · tag v1.2.0-release 已推）
+- **Git Tags**：v1.0.0 → v1.0.0-compose → **v1.2.0-release**（2026-10-18 首个全功能交付）
 - **三重验证链**：706/706 + 75/75 + jvmTest **37/37** + Debug + Release 全绿
 - **源码统计**：85 Kotlin 文件（shared 61 + composeApp 24）
 - **新功能**：
