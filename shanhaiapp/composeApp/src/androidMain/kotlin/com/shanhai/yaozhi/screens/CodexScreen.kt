@@ -1,5 +1,8 @@
 package com.shanhai.yaozhi.screens
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,7 +17,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,11 +30,16 @@ import com.shanhai.core.model.MonsterCategory
 import com.shanhai.core.model.Rarity
 import com.shanhai.yaozhi.LocalGameState
 import com.shanhai.yaozhi.LocalGsVersion
+import com.shanhai.yaozhi.components.ChipSize
 import com.shanhai.yaozhi.components.EmptyState
+import com.shanhai.yaozhi.components.GradientHeader
+import com.shanhai.yaozhi.components.RarityChip
+import com.shanhai.yaozhi.theme.*
+import kotlinx.coroutines.launch
 
 /**
- * 妖典图鉴 · V2
- * 从 GameState.codex 取已捕获数据 + MonsterPool 全量定义
+ * 妖典图鉴 · V3（视觉润色）
+ * v3: GradientHeader 标题栏 + RarityChip 统一标签 + MonsterCard 稀有度光晕圈 + 详情渐变底
  */
 @Composable
 fun CodexScreen(modifier: Modifier = Modifier) {
@@ -53,46 +63,44 @@ fun CodexScreen(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // 头部
-        Surface(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("妖典图鉴", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    "${codex.regionCaught()}/${codex.regionTotal()}",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+        // v3: GradientHeader
+        GradientHeader(
+            title = "妖典图鉴",
+            subtitle = "${codex.regionCaught()}/${codex.regionTotal()}"
+        )
 
-        // 筛选行
+        Spacer(Modifier.height(8.dp))
+
+        // 筛选行（加间距优化）
         Row(
-            modifier = Modifier.padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             FilterChip(
                 selected = rarityFilter == null,
                 onClick = { rarityFilter = null },
-                label = { Text("全部稀有", fontSize = 12.sp) }
+                label = { Text("全部稀有", fontSize = 12.sp) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = QingDai.copy(alpha = 0.15f),
+                    selectedLabelColor = QingDai
+                )
             )
             Rarity.values().forEach { r ->
+                val active = rarityFilter == r
                 FilterChip(
-                    selected = rarityFilter == r,
+                    selected = active,
                     onClick = { rarityFilter = r },
-                    label = { Text(r.label, fontSize = 12.sp) }
+                    label = { Text(r.label, fontSize = 12.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = colorForRarity(r).copy(alpha = 0.15f),
+                        selectedLabelColor = colorForRarity(r)
+                    )
                 )
             }
         }
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             FilterChip(
                 selected = categoryFilter == null,
@@ -108,7 +116,7 @@ fun CodexScreen(modifier: Modifier = Modifier) {
             }
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
 
         // 列表
         if (filtered.isEmpty()) {
@@ -117,10 +125,10 @@ fun CodexScreen(modifier: Modifier = Modifier) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(filtered, key = { it.id }) { monster ->
-                    MonsterCard(monster, codex.snapshotRegion().contains(monster.id)) {
+                    MonsterCardV3(monster, codex.snapshotRegion().contains(monster.id)) {
                         selectedMonster = monster
                     }
                 }
@@ -128,14 +136,20 @@ fun CodexScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    // 详情弹窗
+    // 详情弹窗（v3: 渐变底 + 稀有度标签）
     selectedMonster?.let { m ->
-        MonsterDetailDialog(m, codex) { selectedMonster = null }
+        MonsterDetailDialogV3(m, codex) { selectedMonster = null }
     }
 }
 
+/** v3: MonsterCard 稀有度光晕圈 + 渐变底 */
 @Composable
-private fun MonsterCard(monster: Monster, caught: Boolean, onClick: () -> Unit) {
+private fun MonsterCardV3(monster: Monster, caught: Boolean, onClick: () -> Unit) {
+    val rarityGlow by animateColorAsState(
+        targetValue = colorForRarity(monster.rarity).copy(alpha = 0.2f),
+        animationSpec = tween(300),
+        label = "rarityGlow"
+    )
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -150,54 +164,71 @@ private fun MonsterCard(monster: Monster, caught: Boolean, onClick: () -> Unit) 
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // v3: 光晕圈 + 彩色底
             Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(colorForRarity(monster.rarity)),
+                modifier = Modifier.size(54.dp).clip(CircleShape).background(rarityGlow),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    if (caught) monster.name.take(1) else "?",
-                    color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold
-                )
+                Box(
+                    modifier = Modifier.size(44.dp).clip(CircleShape)
+                        .background(colorForRarity(monster.rarity)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        if (caught) monster.name.take(1) else "?",
+                        color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold
+                    )
+                }
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     if (caught) monster.name else "???",
                     fontSize = 16.sp, fontWeight = FontWeight.Bold
                 )
-                Text(
-                    "${monster.rarity.label} · ${monster.element.label} · ${monster.category.label}",
-                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    RarityChip(monster.rarity, size = ChipSize.SMALL)
+                    Text("${monster.element.label}·${monster.category.label}",
+                        fontSize = 11.sp, color = YanHui)
+                }
             }
             if (caught) {
-                Icon(Icons.Filled.CheckCircle, null, tint = Color(0xFF27AE60), modifier = Modifier.size(20.dp))
+                Icon(Icons.Filled.CheckCircle, null, tint = HealingGreen, modifier = Modifier.size(22.dp))
             }
         }
     }
 }
 
+/** v3: 详情弹窗渐变底 */
 @Composable
-private fun MonsterDetailDialog(monster: Monster, codex: Codex, onDismiss: () -> Unit) {
+private fun MonsterDetailDialogV3(monster: Monster, codex: Codex, onDismiss: () -> Unit) {
     val caught = codex.snapshotRegion().contains(monster.id)
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(monster.name) },
+        title = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                Text(monster.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                RarityChip(monster.rarity, size = ChipSize.MEDIUM)
+            }
+        },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("稀有度：${monster.rarity.label}")
-                Text("五行：${monster.element.label}")
-                Text("类别：${monster.category.label}")
-                HorizontalDivider()
-                Text("HP ${monster.baseHp} · ATK ${monster.baseAtk} · DEF ${monster.baseDef} · SPD ${monster.baseSpd}")
-                HorizontalDivider()
-                Text(monster.desc.ifBlank { "暂无描述" }, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                HorizontalDivider()
-                Text("已装备技能：", fontWeight = FontWeight.Medium)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Surface(shape = RoundedCornerShape(12.dp),
+                    color = colorForRarity(monster.rarity).copy(alpha = 0.08f),
+                    modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("五行 ${monster.element.label} · 类别 ${monster.category.label}",
+                            fontSize = 13.sp, color = YanHui)
+                        Text("HP ${monster.baseHp} · ATK ${monster.baseAtk} · DEF ${monster.baseDef} · SPD ${monster.baseSpd}",
+                            fontSize = 13.sp, color = MoHei)
+                    }
+                }
+                Text(monster.desc.ifBlank { "暂无描述" }, fontSize = 13.sp, color = YanHui)
+                Text("已装备技能：", fontWeight = FontWeight.Medium, fontSize = 13.sp)
                 monster.skills.forEach { sk ->
-                    Text("  · ${sk.name}（${sk.element.label} · 威力${sk.power}）", fontSize = 13.sp)
+                    Text("  · ${sk.name}（${sk.element.label} · 威力${sk.power}）", fontSize = 13.sp,
+                        color = MoHei)
                 }
             }
         },
@@ -205,24 +236,14 @@ private fun MonsterDetailDialog(monster: Monster, codex: Codex, onDismiss: () ->
     )
 }
 
-private fun colorForRarity(r: Rarity): Color = when (r) {
-    Rarity.FAN -> Color(0xFF7F8C8D)
-    Rarity.LING -> Color(0xFF3498DB)
-    Rarity.XIAN -> Color(0xFF9B59B6)
-    Rarity.SHEN -> Color(0xFFF39C12)
-}
-
+// ===== 标签扩展（Theme 已统一 colorForRarity，这里只保留 label）=====
 private val Rarity.label: String get() = when (this) {
-    Rarity.FAN -> "凡"
-    Rarity.LING -> "灵"
-    Rarity.XIAN -> "仙"
-    Rarity.SHEN -> "神"
+    Rarity.FAN -> "凡"; Rarity.LING -> "灵"
+    Rarity.XIAN -> "仙"; Rarity.SHEN -> "神"
 }
 private val MonsterCategory.label: String get() = when (this) {
-    MonsterCategory.JING -> "精"
-    MonsterCategory.GUAI -> "怪"
-    MonsterCategory.YAO -> "妖"
-    MonsterCategory.LINGSHOU -> "灵兽"
+    MonsterCategory.JING -> "精"; MonsterCategory.GUAI -> "怪"
+    MonsterCategory.YAO -> "妖"; MonsterCategory.LINGSHOU -> "灵兽"
 }
 private val com.shanhai.core.model.Element.label: String get() = when (this) {
     com.shanhai.core.model.Element.METAL -> "金"
