@@ -1,0 +1,118 @@
+{
+  "meta": {
+    "version": "1.0",
+    "source": "BattleEngine + CaptureEngine + GachaEngine + CultivationEngine",
+    "extracted": "2026-10-18"
+  },
+  "battle": {
+    "damage_formula": "floor((ATK/DEF) × skill_power × level_coef × element_mult × category_mult × crit_mult × random × teamAttackMul × envMul × sectAttackMul)",
+    "level_coef": "1.0 + (level - 1) × 0.02",
+    "element_multipliers": {
+      "beats": 1.6,
+      "beaten_by": 0.6,
+      "neutral": 1.0
+    },
+    "category_multipliers": {
+      "beats": 1.3,
+      "beaten_by": 0.7692,
+      "neutral": 1.0
+    },
+    "crit": {
+      "base_chance": 0.05,
+      "min_chance": 0.0,
+      "max_chance": 1.0,
+      "multiplier": 1.5,
+      "random_range": "0.9..1.0"
+    },
+    "category_ring": {
+      "YAO": "JING",
+      "JING": "GUAI",
+      "GUAI": "LINGSHOU",
+      "LINGSHOU": "YAO"
+    },
+    "element_beats": {
+      "METAL": ["WOOD", "WIND"],
+      "WOOD": ["EARTH", "THUNDER"],
+      "EARTH": ["WATER", "WIND"],
+      "WATER": ["FIRE", "THUNDER"],
+      "FIRE": ["METAL", "WIND"],
+      "WIND": ["EARTH", "THUNDER"],
+      "THUNDER": ["WOOD", "WATER"]
+    }
+  },
+  "capture": {
+    "ring_cycle_ms": {
+      "FAN": 2600,
+      "LING": 2200,
+      "XIAN": 1900,
+      "SHEN": 1600
+    },
+    "assist_mode_multiplier": 1.4,
+    "success_formula": "((accuracy + assist_bonus) × rarityFactor × 0.92 + 0.06) × captureMul",
+    "assist_bonus": 0.18,
+    "rarity_factor": {
+      "FAN": 1.0,
+      "LING": 0.9,
+      "XIAN": 0.8,
+      "SHEN": 0.7
+    },
+    "floor_probability": 0.06,
+    "accuracy_formula": "1.0 - ((tapRadius - minRadius) / (maxRadius - minRadius))",
+    "assist_accuracy_curve": "raw × 0.8 + 0.2"
+  },
+  "gacha": {
+    "normal_pool": {
+      "LING": 0.40,
+      "XIAN": 0.45,
+      "SHEN": 0.15,
+      "soft_pity_start": 49,
+      "hard_pity": 90,
+      "soft_pity_step": 0.02
+    },
+    "limited_pool": {
+      "SHEN": 0.018,
+      "XIAN": 0.982,
+      "LING": 0.0,
+      "soft_pity_start": 39,
+      "hard_pity": 85,
+      "soft_pity_step": 0.025
+    },
+    "pity_formula": "shenRate = baseShen + (pity - softStart + 1) × step  (capped at 1.0)",
+    "hard_pity_rule": "if pity >= hardLimit - 1: SHEN guaranteed",
+    "economy": {
+      "single_lingyu_cost": 60,
+      "ten_lingyu_cost": 540,
+      "ten_pull_guarantee": "at least LING rarity",
+      "duplicate_yaodan": 10
+    },
+    "sign_tier_map": {
+      "SHEN": "SHANG_SHANG",
+      "XIAN": "SHANG",
+      "LING": "ZHONG"
+    }
+  },
+  "cultivation": {
+    "base_level_cap": 30,
+    "max_breakthrough": 5,
+    "level_cap_per_breakthrough": 5,
+    "stat_mult_per_breakthrough": 0.08,
+    "max_stat_mult": 0.40,
+    "evolve_level_req": 25,
+    "tribulate_stat_bonus": 0.25,
+    "tribulate_base_cost_yaodan": 200,
+    "tribulate_cost_formula": "base × (tribulations + 1)",
+    "exp_formula": "100 + (level - 1) × 25",
+    "breakthrough_level_req_formula": "20 + currentBreakthrough × 5",
+    "breakthrough_cost_formula": "20 + currentBreakthrough × 15",
+    "effective_stats": "baseStatsAtLevel(level) × statMult(breakthrough) × tribulateMult(tribulations) × talentMult",
+    "tribulate_mult_formula": "1.0 + tribulations × 0.25",
+    "stat_mult_formula": "1.0 + breakthrough × 0.08",
+    "max_tribulations_by_rarity": {
+      "FAN": 3,
+      "LING": 2,
+      "XIAN": 1,
+      "SHEN": 0
+    },
+    "can_tribulate_condition": "breakthrough >= MAX_BREAKTHROUGH && level >= levelCap && tribulations < maxTribulations"
+  }
+}
