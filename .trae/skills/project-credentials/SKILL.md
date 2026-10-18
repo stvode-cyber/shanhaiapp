@@ -46,7 +46,7 @@ gh release create vX.Y.Z ...    # 建 GitHub release
 | Compose BOM | 2024.09.03 |
 | osmdroid | 6.1.20 |
 | Gradle Wrapper | 8.7 |
-| **GitHub Release** | **v1.0.0 + v1.0.0-compose**（15 commits · 最新 20fc076）|
+| **GitHub Release** | **v1.2.0-release**（首个可安装全功能交付 · 20 commits · 最新 a81a316）|
 | **最新验证** | **verify_all [ALL PASS]**：706/706 + 75/75 + 37/37 + Debug + Release 3.59MB 正式签名 |
 | **Release keystore** | RSA 2048 / PKCS12 / 25 年 / SHA-256: 1387ee48d3fe3b4442f6027dc1aec74debf19fe68c680696a68c3708cc243423（密码存 credentials.md）|
 
